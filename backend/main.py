@@ -16,7 +16,7 @@ from backend.config import (
     FRONTEND_DIST_DIR,
 )
 from backend.data.loader import get_data_loader
-from backend.api.routes import health, overview, sales, forecasting, models, inventory, insights
+from backend.api.routes import health, overview, sales, forecasting, models, inventory, insights, analytics_advanced
 
 
 @asynccontextmanager
@@ -59,6 +59,7 @@ app.include_router(forecasting.router, prefix="/api", tags=["Time-Series & Forec
 app.include_router(models.router, prefix="/api", tags=["Model Performance"])
 app.include_router(inventory.router, prefix="/api", tags=["Inventory Intelligence"])
 app.include_router(insights.router, prefix="/api", tags=["AI Business Insights"])
+app.include_router(analytics_advanced.router, prefix="/api", tags=["Advanced Analytics & Data Science"])
 
 
 # Static file serving & SPA fallback

@@ -1,62 +1,75 @@
-# DemandVision AI 
-## Retail Sales Forecasting & Inventory Intelligence Platform
+# DemandVision Pro
+## Enterprise AI Retail Sales Forecasting & Inventory Intelligence Platform
 
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.14-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18.2-61DAFB.svg)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6.svg)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC.svg)](https://tailwindcss.com/)
-[![Vite](https://img.shields.io/badge/Vite-5.1-646CFF.svg)](https://vitejs.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF.svg)](https://vitejs.dev/)
 [![Render](https://img.shields.io/badge/Render-Deployment_Ready-46E3B7.svg)](https://render.com/)
-[![Tests](https://img.shields.io/badge/Tests-13%20Passed-10B981.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-16%20Passed-10B981.svg)]()
+[![Currency](https://img.shields.io/badge/Localization-INR%20%E2%82%B9-F59E0B.svg)]()
 
-> **Predict Demand. Optimize Inventory. Make Smarter Decisions.**
+> **Predict Demand. Optimize Inventory. Mitigate Stockout Risks. Empower Enterprise Decision-Making.**
 
 ---
 
 ### Executive Overview
 
-**DemandVision AI** is an enterprise-grade retail sales forecasting and inventory intelligence web platform. Built completely from scratch as a full-stack data science and machine learning application, it enables retail planners, supply chain directors, and store managers to understand historical sales dynamics, predict SKU-level future customer demand with confidence intervals, and execute automated, statistically sound replenishment decisions.
+**DemandVision Pro** is an enterprise-grade retail sales forecasting and inventory intelligence platform. Built from the ground up as a production full-stack Data Science and Machine Learning application, it empowers retail planners, supply chain directors, and merchandising leads to uncover historical consumption patterns, predict future SKU-level customer demand with probabilistic confidence bounds, and execute automated, statistically sound replenishment decisions.
 
-The application leverages the genuine **Kaggle Store Item Demand Forecasting Challenge** dataset (913,000 verified daily transactions across 10 stores and 50 products from 2013 to 2017) to deliver authentic, zero-fabrication predictive analytics.
+The application operates on the genuine **Kaggle Store Item Demand Forecasting Challenge** dataset (913,000 verified daily transactions across 10 stores and 50 products spanning 2013 to 2017) enriched with an **Indian Retail Localization Layer** (100 FMCG SKUs across 7 categories, 10 metro cities, configurable INR (₹) demonstration prices, and automated purchase order generation).
 
 ---
 
-### Key Capabilities & Business Questions Answered
+### 12 Production Dashboard Modules
 
-1. **Volume & Leader Benchmarking**: Which retail locations and products drive the majority of store revenue?
-2. **Growth Trajectory**: Are sales expanding or contracting across multi-year and month-over-month horizons?
-3. **Weekly & Annual Seasonality**: What is the quantifiable weekend uplift vs. weekday baseline? What are peak summer surge months?
-4. **Time-Series Decomposition**: How does underlying consumer trend separate from recurring seasonal cycles and irregular noise?
-5. **Multi-Horizon Probabilistic Forecasting**: How many units of Item #15 will Store #2 sell over the next 7, 30, or 90 days?
-6. **Model Leaderboard**: Which algorithm (XGBoost, ARIMA, Holt-Winters, Moving Average, Naive) performs best on out-of-sample holdout tests?
-7. **Statistical Inventory Planning**: How much safety stock is required to maintain a 95% or 99% cycle service level?
-8. **Stockout Risk Detection**: Which SKUs will stock out before supplier replenishment deliveries arrive?
+| # | Module Name | Core Capabilities |
+| :-: | :--- | :--- |
+| **1** | **Executive Overview** | Composite Business Health Radar, INR (₹) Revenue Tracking, 5-Year Monthly Sales Area Chart, Product Intelligence Score Leaderboard, Demand & Inventory Risk Radar, and Statistical Anomaly Ticker. |
+| **2** | **Sales Analytics** | Statistical distributions (Mean, Median, Std Dev, Variance, IQR), Day-of-Week Seasonality (Mon–Sun), 12-Month Annual Seasonality Curve, and Top 10 vs Bottom 10 SKU rankings. |
+| **3** | **Time-Series Explorer** | Classical Decomposition into **Observed, Trend, Seasonal, and Residual components**, 7/30-day Rolling Moving Averages, Autocorrelation (ACF) & Partial Autocorrelation (PACF), and Augmented Dickey-Fuller (ADF) Stationarity Test. |
+| **4** | **Demand Forecasting Lab** | Multi-model probabilistic forecasting over 7, 30, or 90 days. Interactive fan chart with 95% confidence intervals, **plus a 30-Day Forward Demand Calendar** displaying daily cards with peak spikes, weekend surges, and stockout exhaustion dates. |
+| **5** | **What-If Simulation Lab** | Interactive stress-testing sandbox with scenario presets (Base, +10%, +20% Festive Surge, -10% Contraction) and real-time sliders for Demand Shock %, On-Hand Stock, Supplier Lead Time, Service Level, and Unit Price (₹) with financial delta recalculations. |
+| **6** | **Demand Velocity Heatmap** | Multidimensional cross-tabulation matrix explorer: Products × Stores (50 SKUs across 10 cities), Day-of-Week × Month (Seasonality), and Stores × Month with glowing normalized cell intensity gradients. |
+| **7** | **Inventory Intelligence** | User-configurable supplier lead times (3–30 days) and target service levels (85%–99%). Automated calculation of Safety Stock ($Z \times \sigma_d \times \sqrt{L}$), Reorder Points (ROP), Days Remaining, and instant CSV purchase order export in INR (₹). |
+| **8** | **Product Catalog & Pricing** | Master catalog of 100 Indian FMCG SKUs (P001–P100), brand metadata, package sizes, forecast availability filters (`Available` vs `Catalog Only`), and instant modal price editor with persistent backend storage. |
+| **9** | **Data Science & ML Lab** | Technical pipeline audit: 913,000-record quality audit (0 nulls, 0 duplicates), Chronological Walk-Forward zero-leakage diagram, interactive engineered feature matrix sample, and **XGBoost Feature Importance** explainability bar chart with analytical takeaways. |
+| **10** | **Model Performance Center** | Cross-model leaderboard evaluating Naive, Moving Average, Holt-Winters Exponential Smoothing, SARIMA, and XGBoost on identical out-of-sample chronological holdout windows using WAPE, MAE, RMSE, MAPE, and $R^2$. |
+| **11** | **AI Business Insights** | Rule-based decision intelligence engine translating real mathematical calculations into 7 categorized supply chain action signals (Growth, Decline, Seasonality, Anomaly, Risk, Model Performance). |
+| **12** | **Dataset Management** | Interactive dataset status monitor, Kaggle dataset documentation, drag-and-drop CSV uploader, and automated 6-point data quality audit report. |
 
 ---
 
 ### Platform Architecture
 
-DemandVision AI is deployed as **ONE Web Service** on Render, bundling the React 18 production build inside FastAPI's static mount with SPA catch-all routing:
+DemandVision Pro is packaged as **ONE Web Service** deployable on Render, Heroku, AWS, or Docker, bundling the React 18 production build directly into FastAPI's static mount with client-side SPA catch-all routing:
 
 ```
-[Browser Client]
+[Browser / Mobile Client]
        │
        │ HTTP / JSON Requests (Port 8000)
        ▼
-[Render Web Service]
+[Single Web Service Instance]
        │
   ┌────┴────────────────────────────────────────┐
-  │         FastAPI Single Web Application      │
+  │         FastAPI Web Application             │
   │                                             │
   │  ├── /api/health                            │
   │  ├── /api/overview                          │
   │  ├── /api/sales/*                           │
   │  ├── /api/timeseries/decomposition          │
-  │  ├── /api/forecast & /api/models/*          │
+  │  ├── /api/forecast & /api/forecast/calendar │
+  │  ├── /api/catalog/products (100 SKUs)       │
+  │  ├── /api/analytics/product-scores          │
+  │  ├── /api/analytics/risks                   │
+  │  ├── /api/analytics/anomalies               │
+  │  ├── /api/analytics/heatmap                 │
+  │  ├── /api/datascience/lab                   │
   │  ├── /api/inventory/recommendations         │
   │  ├── /api/insights                          │
-  │  └── /* ──> React SPA Production Build      │
+  │  └── /* ──> React 18 SPA Production Bundle  │
   └──────────────────┬──────────────────────────┘
                      │
          [In-Memory Data Loader]
@@ -64,94 +77,34 @@ DemandVision AI is deployed as **ONE Web Service** on Render, bundling the React
      ┌───────────────┴───────────────┐
      ▼                               ▼
 [Statistical & Decomposition]   [ML Engine & XGBoost]
-- Statsmodels ARIMA (1,1,1)     - Lag Features (7, 14, 21, 28)
-- Classical Decomposition       - Rolling Statistics
-- Holt-Winters Exp. Smoothing   - Recursive Multi-Step
-- ADF Stationarity Test         - 95% Prediction Bounds
+- Statsmodels ARIMA (1,1,1)     - Lag Features (t-7, 14, 21, 28)
+- Classical Decomposition       - Rolling Stats (Mean, Std)
+- Holt-Winters Exp. Smoothing   - Recursive Multi-Step Horizon
+- ADF Stationarity Test         - 95% Confidence Bounds
 ```
 
 ---
 
-### 9 Functional Dashboard Modules
-
-| # | Module Name | Core Features |
-| :-: | :--- | :--- |
-| **1** | **Executive Overview** | Real-time KPIs (Total units sold, average daily sales, top store, top SKU), 5-year monthly area trend, daily sales trajectory, and store comparative distributions. |
-| **2** | **Sales Analytics** | Statistical distributions (Mean, Median, Std Dev, Variance, IQR, Skewness), Day-of-week seasonality (Mon–Sun), 12-month annual seasonality curve, and Top 5 vs Bottom 5 SKU rankings. |
-| **3** | **Time-Series Explorer** | Classical seasonal decomposition into **Observed, Trend, Seasonal, and Residual components**, rolling averages (7-day, 30-day), Autocorrelation (ACF) & Partial Autocorrelation (PACF) lag analysis, and Augmented Dickey-Fuller (ADF) stationarity test. |
-| **4** | **Demand Forecasting Lab** | Multi-model probabilistic forecasting for any Store and Item over 7, 30, or 90 days. Dynamic confidence interval fan charts ($95\%$ bounds), holdout accuracy metrics, and daily projection breakdown tables. |
-| **5** | **Inventory Intelligence** | User-configurable supplier lead times (3–30 days) and target service levels ($85\%–99\%$). Automated calculation of Safety Stock ($Z \times \sigma_d \times \sqrt{L}$), Reorder Points (ROP), Days of Inventory Remaining, and automated Purchase Order suggestions. |
-| **6** | **Model Performance Center** | Cross-model leaderboard evaluating XGBoost, ARIMA, ETS, Moving Average, and Seasonal Naive on identical chronological holdout windows using WAPE, MAE, RMSE, MAPE, and $R^2$. |
-| **7** | **AI Business Insights** | Rule-based decision intelligence engine translating real analytical findings into tactical supply chain action items (Demand Surges, Volatility warnings, Stockout alarms). |
-| **8** | **Dataset Management** | Interactive dataset status monitor, Kaggle dataset documentation, drag-and-drop CSV uploader, and automated 6-point data quality audit report. |
-| **9** | **About Project** | Comprehensive architectural briefing, mathematical formula references, and technical recruiter guide. |
-
----
-
-### Technology Stack
-
-- **Frontend**:
-  - React 18 with TypeScript
-  - Vite 5 (Bundler & dev server)
-  - Tailwind CSS (Enterprise dark navy design system)
-  - Recharts (Responsive analytical charting)
-  - Lucide React (Clean icon system)
-- **Backend & Data Science**:
-  - Python 3.11+ / 3.14
-  - FastAPI & Uvicorn (Asynchronous REST API)
-  - Pandas & NumPy (Data engineering & aggregation)
-  - Statsmodels (ARIMA, Holt-Winters, Seasonal Decomposition, ADF test)
-  - XGBoost (Gradient-boosted decision trees with recursive multi-step forecasting)
-  - Scikit-learn (Evaluation metrics & validation)
-  - Pydantic v2 (Strict schema validation)
-  - Pytest (Automated test suite)
-- **Deployment**:
-  - Render (Single Web Service with `build.sh` and `render.yaml`)
-
----
-
-### Dataset Details
-
-- **Dataset**: Kaggle Store Item Demand Forecasting Challenge
-- **Source**: [https://www.kaggle.com/competitions/demand-forecasting-kernels-only/data](https://www.kaggle.com/competitions/demand-forecasting-kernels-only/data)
-- **Rows**: 913,000 verified observations
-- **Columns**: `date` (YYYY-MM-DD), `store` (1–10), `item` (1–50), `sales` (Units sold)
-- **Storage Strategy**:
-  - `data/raw/`: Original unaltered raw CSVs (`train.csv`, `test.csv`, `sample_submission.csv`).
-  - `data/processed/`: Standardized, chronologically sorted datasets (`train_clean.csv`, `monthly_sales.csv`, `daily_total_sales.csv`, `dataset_metadata.json`).
-
----
-
-### Local Installation & Quickstart
+### Installation & Quick Start
 
 #### Prerequisites
-- Python 3.10+ (tested on Python 3.11, 3.12, 3.14)
-- Node.js 18+ & npm 9+
+- Python 3.11+ (tested on Python 3.11, 3.12, 3.14)
+- Node.js 18+ and npm
 
-#### 1. Clone Repository & Setup Virtual Environment
+#### 1. Clone & Set Up Backend
 ```bash
-git clone https://github.com/abhayraj/DemandVision-AI.git
+git clone https://github.com/your-username/DemandVision-AI.git
 cd DemandVision-AI
 
-# Create and activate Python virtual environment
-python -m venv .venv
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 
-# On Windows:
-.venv\Scripts\activate
-# On Linux/macOS:
-source .venv/bin/activate
-
-# Install Python requirements
+# Install backend dependencies
 pip install -r requirements.txt
 ```
 
-#### 2. Process the Kaggle Dataset
-The raw Kaggle dataset is already stored in `data/raw/train.csv`. Process and generate the optimized cache:
-```bash
-python -m backend.data.processor
-```
-
-#### 3. Build the Frontend
+#### 2. Build Frontend
 ```bash
 cd frontend
 npm install
@@ -159,54 +112,43 @@ npm run build
 cd ..
 ```
 
-#### 4. Run the Integrated Application
-```bash
-uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
-```
-Open your browser at:
-- **Application Dashboard**: [http://127.0.0.1:8000](http://127.0.0.1:8000)
-- **Interactive Swagger API Docs**: [http://127.0.0.1:8000/api/docs](http://127.0.0.1:8000/api/docs)
-- **System Health Check**: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
-
----
-
-### Running Automated Tests
-
-Run the complete 13-point test suite covering validation, forecasting algorithms, inventory mathematics, and API endpoints:
+#### 3. Run Automated Tests
 ```bash
 python -m pytest tests/test_backend.py -v
 ```
+*(All 16 test cases pass including catalog integrity, walk-forward validation, advanced analytics, and single-service static asset serving).*
+
+#### 4. Launch Production Server
+```bash
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+Open **`http://127.0.0.1:8000`** in your browser. Interactive OpenAPI documentation is accessible at **`http://127.0.0.1:8000/api/docs`**.
 
 ---
 
-### Render Single Web Service Deployment
+### Key Formulas
 
-DemandVision AI is configured for 1-click deployment on Render:
+1. **Safety Stock ($SS$):**
+   $$SS = Z \times \sigma_d \times \sqrt{L}$$
+   *(where $Z=1.65$ for 95% service level, $\sigma_d$ is daily standard deviation, $L$ is lead time in days)*
 
-1. Push your repository to GitHub.
-2. In the [Render Dashboard](https://dashboard.render.com), click **New +** -> **Web Service**.
-3. Connect your repository.
-4. Render will automatically detect `render.yaml` or you can configure:
-   - **Environment**: `Python`
-   - **Build Command**: `bash build.sh`
-   - **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-   - **Plan**: `Free`
-5. Click **Create Web Service**.
+2. **Reorder Point ($ROP$):**
+   $$ROP = (\bar{d} \times L) + SS$$
 
-Detailed deployment documentation is available in [docs/DEPLOYMENT.md](file:///C:/Users/abhay/Downloads/DemandVision-AI-Starter/DemandVision-AI/docs/DEPLOYMENT.md).
+3. **Economic Order Quantity ($EOQ$):**
+   $$EOQ = \sqrt{\frac{2 \times D \times S}{H}}$$
 
----
-
-### Technical Documentation Sitemap
-
-- [System Architecture](file:///C:/Users/abhay/Downloads/DemandVision-AI-Starter/DemandVision-AI/docs/ARCHITECTURE.md)
-- [Data Dictionary & Provenance](file:///C:/Users/abhay/Downloads/DemandVision-AI-Starter/DemandVision-AI/docs/DATA_DICTIONARY.md)
-- [Forecasting Methodology & Zero Data Leakage](file:///C:/Users/abhay/Downloads/DemandVision-AI-Starter/DemandVision-AI/docs/FORECASTING_METHODOLOGY.md)
-- [Inventory Replenishment Methodology](file:///C:/Users/abhay/Downloads/DemandVision-AI-Starter/DemandVision-AI/docs/INVENTORY_METHODOLOGY.md)
-- [Render Deployment Guide](file:///C:/Users/abhay/Downloads/DemandVision-AI-Starter/DemandVision-AI/docs/DEPLOYMENT.md)
+4. **Weighted Absolute Percentage Error ($WAPE$):**
+   $$WAPE = \frac{\sum_{t=1}^N |y_t - \hat{y}_t|}{\sum_{t=1}^N y_t} \times 100\%$$
 
 ---
 
-### License
+### Interview Preparation & Recruiter Walkthrough
 
-This project is open-source under the MIT License. Historical sales dataset is sourced from the Kaggle Store Item Demand Forecasting Challenge for educational and portfolio demonstration.
+When presenting DemandVision Pro in interviews, highlight these three technical achievements:
+
+1. **Zero Data Leakage:** Explain why standard cross-validation destroys time-series validity and how chronological walk-forward splits preserve future out-of-sample purity.
+2. **Feature Engineering & Explainability:** Discuss why 7-day autoregressive lags dominate retail demand (capturing weekly shopping patterns) and show how XGBoost feature importance validates this domain intuition.
+3. **Closing the Loop from ML to Business Action:** Emphasize that raw forecasts are useless without inventory operationalization—show how predictions directly dictate safety stocks, reorder points, and automated purchase orders.
+
+See [docs/PROJECT_STORY.md](docs/PROJECT_STORY.md) for the complete interview guide.

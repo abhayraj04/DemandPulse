@@ -214,4 +214,74 @@ export const api = {
     if (!res.ok) throw new Error('Failed to fetch AI insights');
     return res.json();
   },
+
+  // Product Intelligence Scores (0-100)
+  async getProductScores(params?: { store?: number; category?: string }) {
+    const query = new URLSearchParams();
+    if (params?.store) query.set('store', params.store.toString());
+    if (params?.category) query.set('category', params.category);
+    const res = await fetch(`${API_BASE}/analytics/product-scores?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch product intelligence scores');
+    return res.json();
+  },
+
+  // Demand & Inventory Risk Engine
+  async getRisks(params?: { store?: number; lead_time_days?: number; service_level?: number; top_n?: number }) {
+    const query = new URLSearchParams();
+    if (params?.store) query.set('store', params.store.toString());
+    if (params?.lead_time_days) query.set('lead_time_days', params.lead_time_days.toString());
+    if (params?.service_level) query.set('service_level', params.service_level.toString());
+    if (params?.top_n) query.set('top_n', params.top_n.toString());
+    const res = await fetch(`${API_BASE}/analytics/risks?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to evaluate inventory risks');
+    return res.json();
+  },
+
+  // Statistical Anomaly Detection
+  async getAnomalies(params?: { store?: number; item?: number; window_days?: number; threshold_z?: number; limit?: number }) {
+    const query = new URLSearchParams();
+    if (params?.store) query.set('store', params.store.toString());
+    if (params?.item) query.set('item', params.item.toString());
+    if (params?.window_days) query.set('window_days', params.window_days.toString());
+    if (params?.threshold_z) query.set('threshold_z', params.threshold_z.toString());
+    if (params?.limit) query.set('limit', params.limit.toString());
+    const res = await fetch(`${API_BASE}/analytics/anomalies?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to detect sales anomalies');
+    return res.json();
+  },
+
+  // Demand Heatmap
+  async getHeatmap(params?: { matrix_type?: string; store?: number; category?: string }) {
+    const query = new URLSearchParams();
+    if (params?.matrix_type) query.set('matrix_type', params.matrix_type);
+    if (params?.store) query.set('store', params.store.toString());
+    if (params?.category) query.set('category', params.category);
+    const res = await fetch(`${API_BASE}/analytics/heatmap?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to generate demand heatmap');
+    return res.json();
+  },
+
+  // Forecast Calendar
+  async getForecastCalendar(params: { store: number; item: number; horizon?: number; model_id?: string; stock_override?: number }) {
+    const query = new URLSearchParams({
+      store: params.store.toString(),
+      item: params.item.toString(),
+    });
+    if (params.horizon) query.set('horizon', params.horizon.toString());
+    if (params.model_id) query.set('model_id', params.model_id);
+    if (params.stock_override !== undefined) query.set('stock_override', params.stock_override.toString());
+    const res = await fetch(`${API_BASE}/forecast/calendar?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to load forecast calendar');
+    return res.json();
+  },
+
+  // Data Science Lab
+  async getDataScienceLab(params?: { store?: number; item?: number }) {
+    const query = new URLSearchParams();
+    if (params?.store) query.set('store', params.store.toString());
+    if (params?.item) query.set('item', params.item.toString());
+    const res = await fetch(`${API_BASE}/datascience/lab?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to load Data Science Lab analytics');
+    return res.json();
+  },
 };

@@ -139,3 +139,13 @@ class XGBoostForecaster:
         upper = preds + margin
         
         return preds, lower, upper
+
+    def get_feature_importance(self) -> Dict[str, float]:
+        """Returns feature importances mapped to feature names."""
+        if self.model is None or not hasattr(self.model, "feature_importances_"):
+            return {f: 0.1 for f in self.feature_names}
+        importances = self.model.feature_importances_
+        return {
+            name: float(imp)
+            for name, imp in zip(self.feature_names, importances)
+        }

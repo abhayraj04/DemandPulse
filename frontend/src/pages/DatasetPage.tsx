@@ -93,7 +93,7 @@ export const DatasetPage: React.FC = () => {
         </div>
 
         <a
-          href={status?.source_url || 'https://www.kaggle.com/competitions/demand-forecasting-kernels-only/data'}
+          href={'https://www.kaggle.com/competitions/demand-forecasting-kernels-only/data'}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-navy-850 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-surface-border transition-colors"
@@ -135,7 +135,7 @@ export const DatasetPage: React.FC = () => {
               value={status?.date_range ? `${status.date_range.total_days} Days` : 'N/A'}
               subtitle={
                 status?.date_range
-                  ? `${status.date_range.start} to ${status.date_range.end}`
+                  ? `${status.date_range.min_date} to ${status.date_range.max_date}`
                   : 'No dates'
               }
               icon={ShieldCheck}

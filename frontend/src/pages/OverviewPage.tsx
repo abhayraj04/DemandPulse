@@ -8,6 +8,13 @@ import {
   TrendingUp,
   DollarSign,
   Layers,
+  AlertTriangle,
+  Activity,
+  ShieldAlert,
+  Flame,
+  CheckCircle2,
+  Info,
+  Sparkles,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -25,12 +32,18 @@ import {
 } from 'recharts';
 
 import { api } from '../services/api';
-import { ExecutiveOverview, ProductCatalogItem, StoreProfile } from '../types/api';
+import {
+  ExecutiveOverview,
+  ProductCatalogItem,
+  StoreProfile,
+  ProductIntelligenceItem,
+  RiskEngineResponse,
+  AnomalyDetectionResponse,
+} from '../types/api';
 import { MetricCard } from '../components/common/MetricCard';
 import { FilterBar } from '../components/common/FilterBar';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { formatINR, formatIndianNumber } from '../utils/formatters';
-import { Info } from 'lucide-react';
 
 export const OverviewPage: React.FC<{
   selectedStore: number | undefined;
@@ -42,6 +55,9 @@ export const OverviewPage: React.FC<{
   const [categories, setCategories] = useState<any[]>([]);
   const [catalog, setCatalog] = useState<ProductCatalogItem[]>([]);
   const [stores, setStores] = useState<StoreProfile[]>([]);
+  const [productScores, setProductScores] = useState<ProductIntelligenceItem[]>([]);
+  const [risksData, setRisksData] = useState<RiskEngineResponse | null>(null);
+  const [anomaliesData, setAnomaliesData] = useState<AnomalyDetectionResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,12 +71,18 @@ export const OverviewPage: React.FC<{
     try {
       setIsLoading(true);
       setError(null);
-      const [overviewRes, catRes] = await Promise.all([
+      const [overviewRes, catRes, scoresRes, risksRes, anomaliesRes] = await Promise.all([
         api.getOverview({ store: selectedStore, item: selectedItem }),
         api.getCategories(selectedStore),
+        api.getProductScores({ store: selectedStore }).catch(() => null),
+        api.getRisks({ store: selectedStore }).catch(() => null),
+        api.getAnomalies({ store: selectedStore, item: selectedItem }).catch(() => null),
       ]);
       setData(overviewRes);
       setCategories(catRes.categories || []);
+      if (scoresRes?.products) setProductScores(scoresRes.products);
+      if (risksRes) setRisksData(risksRes);
+      if (anomaliesRes) setAnomaliesData(anomaliesRes);
     } catch (err: any) {
       setError(err.message || 'Failed to load executive overview.');
     } finally {
@@ -376,6 +398,200 @@ export const OverviewPage: React.FC<{
           </div>
         </div>
       </div>
+
+      {/* ADVANCED INTELLIGENCE SECTION: Product Intelligence + Risk Radar */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Product Intelligence Top Opportunities */}
+        <div className="p-5 rounded-xl bg-surface-card border border-surface-border shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-4 h-4 text-brand-cyan" />
+                <h3 className="text-sm font-bold text-white tracking-wide">
+                  Product Intelligence Score Leaderboard
+                </h3>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Composite 0–100 score: Growth, Consistency, Velocity, Stability & Margin
+              </p>
+            </div>
+            <span className="text-[10px] font-mono bg-brand-cyan/15 text-brand-cyan px-2 py-0.5 rounded border border-brand-cyan/30">
+              Top Performers
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            {productScores.slice(0, 4).map((p) => (
+              <div
+                key={p.item_id}
+                className="p-3 rounded-lg bg-navy-900 border border-surface-border hover:border-slate-700 transition"
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-mono font-bold text-brand-cyan">{p.product_id}</span>
+                    <span className="text-xs font-semibold text-white truncate max-w-[200px]" title={p.product_name}>
+                      {p.product_name}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        p.tier === 'High Opportunity'
+                          ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
+                      }`}
+                    >
+                      {p.tier}
+                    </span>
+                    <span className="text-base font-bold font-mono text-white">{p.overall_score}</span>
+                  </div>
+                </div>
+
+                {/* Score bar */}
+                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-2">
+                  <div
+                    className="bg-gradient-to-r from-brand-cyan to-brand-emerald h-full rounded-full"
+                    style={{ width: `${p.overall_score}%` }}
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 gap-2 text-[10px] text-slate-400 font-mono">
+                  <div>Growth: <strong className="text-slate-200">{p.components.sales_growth.score}</strong></div>
+                  <div>Consistency: <strong className="text-slate-200">{p.components.demand_consistency.score}</strong></div>
+                  <div>Stability: <strong className="text-slate-200">{p.components.stability.score}</strong></div>
+                  <div>Daily: <strong className="text-brand-emerald">{p.avg_daily_demand.toFixed(1)} u/d</strong></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Demand & Inventory Risk Engine Radar */}
+        <div className="p-5 rounded-xl bg-surface-card border border-surface-border shadow-lg flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <ShieldAlert className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-sm font-bold text-white tracking-wide">
+                    Demand & Inventory Risk Engine
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Multi-factor vulnerability: Stockout days, demand volatility & sales momentum
+                </p>
+              </div>
+              <span className="text-[10px] font-mono bg-amber-500/15 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">
+                Active Radar
+              </span>
+            </div>
+
+            {/* Risk Counts Strip */}
+            {risksData && (
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="p-2.5 rounded-lg bg-rose-950/30 border border-rose-500/30 text-center">
+                  <div className="text-lg font-bold font-mono text-rose-400">{risksData.summary.high_risk_count}</div>
+                  <div className="text-[10px] text-rose-300 uppercase tracking-wider">High Risk SKUs</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-amber-950/30 border border-amber-500/30 text-center">
+                  <div className="text-lg font-bold font-mono text-amber-400">{risksData.summary.medium_risk_count}</div>
+                  <div className="text-[10px] text-amber-300 uppercase tracking-wider">Medium Risk</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/30 text-center">
+                  <div className="text-lg font-bold font-mono text-emerald-400">{risksData.summary.low_risk_count}</div>
+                  <div className="text-[10px] text-emerald-300 uppercase tracking-wider">Low Risk</div>
+                </div>
+              </div>
+            )}
+
+            {/* Top Critical Risk Items */}
+            <div className="space-y-2.5">
+              {risksData?.items.slice(0, 3).map((r) => (
+                <div
+                  key={r.item_id}
+                  className="p-2.5 rounded-lg bg-navy-900 border border-surface-border text-xs flex items-center justify-between"
+                >
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-mono text-amber-400 font-bold">{r.product_id}</span>
+                      <span className="text-white font-medium truncate max-w-[170px]">{r.product_name}</span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">
+                      Days left: <strong className="text-rose-400 font-mono">{r.days_remaining.toFixed(1)}d</strong> • Revenue at risk:{' '}
+                      <strong className="text-slate-200">{formatINR(r.revenue_at_risk_inr)}</strong>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 uppercase">
+                    {r.risk_level}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-surface-border text-[11px] text-slate-400 flex items-center justify-between">
+            <span>Potential stockout risk based on configured inventory assumptions.</span>
+            <span className="text-amber-400 font-bold font-mono">
+              Total Risk: {formatINR(risksData?.summary.total_revenue_at_risk_inr)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* STATISTICAL ANOMALY DETECTION STREAM */}
+      {anomaliesData && anomaliesData.anomalies.length > 0 && (
+        <div className="p-5 rounded-xl bg-surface-card border border-surface-border shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="flex items-center space-x-2">
+                <Activity className="w-4 h-4 text-rose-400" />
+                <h3 className="text-sm font-bold text-white tracking-wide">
+                  Statistical Anomaly Detection Stream
+                </h3>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Rolling 14-day Z-score analysis flagging demand spikes and drops exceeding 2.5 standard deviations
+              </p>
+            </div>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30">
+              {anomaliesData.summary.total_anomalies_detected} Anomalies Flagged
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {anomaliesData.anomalies.slice(0, 4).map((a, idx) => (
+              <div
+                key={idx}
+                className="p-3 rounded-lg bg-navy-900 border border-surface-border text-xs space-y-1.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-slate-400 text-[11px]">{a.date}</span>
+                  <span
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                      a.direction === 'positive'
+                        ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                        : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'
+                    }`}
+                  >
+                    {a.severity}
+                  </span>
+                </div>
+                <div className="font-semibold text-white truncate" title={a.product_name}>
+                  {a.product_name}
+                </div>
+                <div className="text-[11px] text-slate-400 flex justify-between font-mono">
+                  <span>Actual: <strong className="text-white">{a.actual_sales}</strong></span>
+                  <span>Expected: <strong className="text-slate-300">{a.expected_mean.toFixed(0)}</strong></span>
+                  <span className="text-brand-cyan">Z: {a.z_score.toFixed(1)}</span>
+                </div>
+                <p className="text-[10px] text-slate-500 line-clamp-2 pt-1 border-t border-surface-border/50">
+                  {a.explanation}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

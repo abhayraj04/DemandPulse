@@ -9,8 +9,11 @@ import { OverviewPage } from './pages/OverviewPage';
 import { SalesAnalyticsPage } from './pages/SalesAnalyticsPage';
 import { TimeSeriesPage } from './pages/TimeSeriesPage';
 import { DemandForecastingPage } from './pages/DemandForecastingPage';
+import { WhatIfSimulationPage } from './pages/WhatIfSimulationPage';
+import DemandHeatmapPage from './pages/DemandHeatmapPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { ProductCatalogPage } from './pages/ProductCatalogPage';
+import DataScienceLabPage from './pages/DataScienceLabPage';
 import { ModelPerformancePage } from './pages/ModelPerformancePage';
 import { InsightsPage } from './pages/InsightsPage';
 import { DatasetPage } from './pages/DatasetPage';
@@ -66,6 +69,17 @@ export const App: React.FC = () => {
             onItemChange={setSelectedItem}
           />
         );
+      case 'simulation':
+        return (
+          <WhatIfSimulationPage
+            selectedStore={selectedStore}
+            selectedItem={selectedItem}
+            onStoreChange={setSelectedStore}
+            onItemChange={setSelectedItem}
+          />
+        );
+      case 'heatmap':
+        return <DemandHeatmapPage />;
       case 'inventory':
         return (
           <InventoryPage
@@ -82,6 +96,8 @@ export const App: React.FC = () => {
             }}
           />
         );
+      case 'datascience':
+        return <DataScienceLabPage />;
       case 'models':
         return (
           <ModelPerformancePage

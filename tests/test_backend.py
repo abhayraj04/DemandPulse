@@ -233,6 +233,50 @@ def test_update_demo_price():
     assert p["configured_price_inr"] == 35.0
 
 
+def test_advanced_analytics_endpoints():
+    """Verifies product scores, risk engine, anomaly detection, heatmap, calendar, and data science lab."""
+    from backend.analytics.product_intelligence import calculate_product_intelligence_scores
+    from backend.inventory.risk_engine import evaluate_demand_and_inventory_risks
+    from backend.analytics.anomaly_detection import detect_sales_anomalies
+    from backend.analytics.heatmap import generate_demand_heatmap
+    from backend.forecasting.calendar import generate_forecast_calendar
+    from backend.analytics.data_science_lab import get_data_science_lab_analytics
+
+    # 1. Product Intelligence Scores
+    scores = calculate_product_intelligence_scores(store=1)
+    assert len(scores) == 50
+    assert 0.0 <= scores[0]["overall_score"] <= 100.0
+    assert scores[0]["tier"] in ["High Opportunity", "Strong Performance", "Monitor", "High Risk"]
+    assert "components" in scores[0]
+
+    # 2. Risk Engine
+    risks = evaluate_demand_and_inventory_risks(store=1, lead_time_days=7)
+    assert "summary" in risks
+    assert len(risks["items"]) > 0
+    assert risks["items"][0]["risk_level"] in ["High Risk", "Medium Risk", "Low Risk"]
+
+    # 3. Anomaly Detection
+    anomalies = detect_sales_anomalies(store=1, item=1)
+    assert "anomalies" in anomalies
+    assert "summary" in anomalies
+
+    # 4. Heatmap
+    heatmap = generate_demand_heatmap(matrix_type="dow_by_month")
+    assert len(heatmap["cells"]) == 84 # 7 days * 12 months
+    assert "intensity" in heatmap["cells"][0]
+
+    # 5. Forecast Calendar
+    cal = generate_forecast_calendar(store=1, item=1, horizon_days=14)
+    assert len(cal["calendar_days"]) == 14
+    assert "intensity" in cal["calendar_days"][0]
+
+    # 6. Data Science Lab
+    lab = get_data_science_lab_analytics(store=1, item=1)
+    assert "data_quality_audit" in lab
+    assert lab["data_quality_audit"]["missing_values"] == 0
+    assert len(lab["model_explainability"]["feature_importance"]) > 0
+
+
 def test_frontend_dist_integration():
     """Verifies production frontend build and SPA assets exist."""
     from backend.config import FRONTEND_DIST_DIR

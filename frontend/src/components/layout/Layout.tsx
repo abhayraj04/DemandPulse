@@ -25,22 +25,34 @@ const tabTitles: Record<NavTab, { title: string; subtitle: string }> = {
   },
   forecasting: {
     title: 'Demand Forecasting Lab',
-    subtitle: 'Multi-model probabilistic forecasting with prediction intervals',
+    subtitle: 'Multi-model probabilistic forecasting with prediction intervals & 30-day calendar',
+  },
+  simulation: {
+    title: 'What-If Demand & Inventory Simulation Lab',
+    subtitle: 'Interactive stress testing: demand shocks, lead times, service levels, and price deltas',
+  },
+  heatmap: {
+    title: 'Demand Velocity Heatmap Explorer',
+    subtitle: 'Multidimensional cross-tabulation: Products × Stores, Seasonality, and Regional Volume',
   },
   inventory: {
-    title: 'Inventory Intelligence',
-    subtitle: 'Safety stock, reorder point calculations, and stockout mitigation recommendations',
+    title: 'Inventory Intelligence & ROP Optimization',
+    subtitle: 'Safety stock, reorder point calculations, and stockout mitigation purchase orders',
   },
   catalog: {
     title: 'Indian Retail Product Catalog & Pricing',
     subtitle: '100 FMCG SKUs, forecast availability mappings, and configurable INR (₹) demonstration prices',
+  },
+  datascience: {
+    title: 'Data Science & ML Engineering Lab',
+    subtitle: 'Mathematical rigor: Data Quality Audit, Chronological Walk-Forward Validation & XGBoost Feature Importance',
   },
   models: {
     title: 'Model Performance Center',
     subtitle: 'Chronological walk-forward validation leaderboard and residual distribution',
   },
   insights: {
-    title: 'AI Business Insights',
+    title: 'AI Business Insights Engine',
     subtitle: 'Real-data grounded business intelligence signals and tactical recommendations',
   },
   dataset: {
@@ -48,8 +60,8 @@ const tabTitles: Record<NavTab, { title: string; subtitle: string }> = {
     subtitle: 'Data validation metrics, quality reports, and Kaggle dataset upload',
   },
   about: {
-    title: 'About DemandVision AI',
-    subtitle: 'Architectural documentation, time-series methodology, and project guide',
+    title: 'About DemandVision Pro',
+    subtitle: 'Architectural documentation, time-series methodology, and interview preparation guide',
   },
 };
 
@@ -97,17 +109,19 @@ export const Layout: React.FC<LayoutProps> = ({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Topbar
           title={current.title}
           subtitle={current.subtitle}
           datasetAvailable={datasetAvailable}
           onOpenDataset={() => onTabChange('dataset')}
-          onToggleMobileMenu={() => setMobileMenuOpen(true)}
+          onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
         />
 
-        <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
-          {children}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -283,11 +283,212 @@ export interface DatasetStatus {
   total_records: number;
   stores: number[];
   items: number[];
-  date_range: {
-    start: string | null;
-    end: string | null;
-    total_days: number;
-  } | null;
-  dataset_source: string;
-  source_url: string;
+  date_range: { min_date: string; max_date: string; total_days: number };
+  file_format_valid: boolean;
+}
+
+export interface ProductIntelligenceItem {
+  item_id: number;
+  product_id: string;
+  product_name: string;
+  brand: string;
+  category: string;
+  package_size: string;
+  configured_price_inr: number;
+  overall_score: number;
+  tier: 'High Opportunity' | 'Strong Performance' | 'Monitor' | 'High Risk';
+  tier_badge: 'emerald' | 'cyan' | 'amber' | 'rose';
+  summary_desc: string;
+  rank: number;
+  components: {
+    sales_growth: { score: number; max: number; label: string; metric: string };
+    demand_consistency: { score: number; max: number; label: string; metric: string };
+    volume_pace: { score: number; max: number; label: string; metric: string };
+    stability: { score: number; max: number; label: string; metric: string };
+    inventory_alignment: { score: number; max: number; label: string; metric: string };
+  };
+  recent_annual_units: number;
+  growth_rate_pct: number;
+  avg_daily_demand: number;
+}
+
+export interface RiskItem {
+  item_id: number;
+  product_id: string;
+  product_name: string;
+  brand: string;
+  category: string;
+  package_size: string;
+  configured_price_inr: number;
+  unit_cost_inr: number;
+  risk_score: number;
+  risk_level: 'High Risk' | 'Medium Risk' | 'Low Risk';
+  risk_badge: 'rose' | 'amber' | 'emerald';
+  current_stock: number;
+  safety_stock: number;
+  reorder_point: number;
+  lead_time_demand: number;
+  days_remaining: number;
+  avg_daily_demand: number;
+  volatility_cv: number;
+  momentum_pct: number;
+  suggested_order: number;
+  reorder_cost_inr: number;
+  revenue_at_risk_inr: number;
+  explanation: string;
+  recommended_action: string;
+}
+
+export interface RiskEngineResponse {
+  store: number;
+  store_name: string;
+  city: string;
+  lead_time_days: number;
+  service_level: number;
+  summary: {
+    total_items_evaluated: number;
+    high_risk_count: number;
+    medium_risk_count: number;
+    low_risk_count: number;
+    total_revenue_at_risk_inr: number;
+    overall_risk_index: number;
+  };
+  items: RiskItem[];
+  disclaimer: string;
+}
+
+export interface AnomalyItem {
+  date: string;
+  store_id: number | null;
+  store_name: string;
+  city: string;
+  item_id: number | null;
+  product_id: string | null;
+  product_name: string;
+  actual_sales: number;
+  expected_mean: number;
+  expected_lower: number;
+  expected_upper: number;
+  z_score: number;
+  deviation_pct: number;
+  severity: 'Critical Spike' | 'Critical Drop' | 'Moderate Spike' | 'Moderate Drop';
+  severity_badge: 'rose' | 'amber' | 'cyan' | 'slate';
+  direction: 'positive' | 'negative';
+  explanation: string;
+}
+
+export interface AnomalyDetectionResponse {
+  store: number | null;
+  item: number | null;
+  window_days: number;
+  threshold_z: number;
+  summary: {
+    total_anomalies_detected: number;
+    spikes_count: number;
+    drops_count: number;
+    max_z_score: number;
+  };
+  anomalies: AnomalyItem[];
+  disclaimer: string;
+}
+
+export interface HeatmapCell {
+  row: string;
+  column: string;
+  value: number;
+  intensity: number;
+  item_id?: number;
+  store_id?: number;
+  product_name?: string;
+  city?: string;
+  label: string;
+}
+
+export interface DemandHeatmapResponse {
+  matrix_type: string;
+  title: string;
+  subtitle: string;
+  rows: string[];
+  columns: string[];
+  min_val: number;
+  max_val: number;
+  cells: HeatmapCell[];
+}
+
+export interface CalendarDay {
+  day_index: number;
+  date: string;
+  day_name: string;
+  short_date: string;
+  predicted_units: number;
+  lower_bound: number;
+  upper_bound: number;
+  cumulative_demand: number;
+  projected_remaining_stock: number;
+  intensity: 'Peak Spike' | 'Normal Demand' | 'Low Demand';
+  intensity_badge: 'amber' | 'cyan' | 'slate';
+  is_weekend: boolean;
+  is_stockout_risk: boolean;
+}
+
+export interface ForecastCalendarResponse {
+  store: number;
+  store_name: string;
+  city: string;
+  item: number;
+  product_id: string;
+  product_name: string;
+  category: string;
+  brand: string;
+  configured_price_inr: number;
+  model_used: string;
+  horizon_days: number;
+  starting_stock: number;
+  total_forecast_units: number;
+  estimated_forecast_revenue_inr: number;
+  avg_daily_demand: number;
+  stockout_depletion_date: string | null;
+  stockout_days_from_today: number | null;
+  calendar_days: CalendarDay[];
+  disclaimer: string;
+}
+
+export interface DataScienceLabResponse {
+  data_quality_audit: {
+    total_records: number;
+    missing_values: number;
+    duplicate_records: number;
+    date_range: string;
+    time_span_years: number;
+    unique_stores: number;
+    unique_items: number;
+    completeness_pct: number;
+    quality_status: string;
+  };
+  feature_engineering_architecture: {
+    calendar_features: string[];
+    lag_features: string[];
+    rolling_window_features: string[];
+    leakage_prevention_method: string;
+    recent_sample: any[];
+  };
+  model_explainability: {
+    algorithm: string;
+    hyperparameters: Record<string, any>;
+    feature_importance: {
+      feature: string;
+      importance_score: number;
+      importance_pct: number;
+      category: string;
+      analytical_insight: string;
+    }[];
+    top_predictor: string;
+    recruiter_takeaway: string;
+  };
+  validation_methodology: {
+    strategy: string;
+    train_window: string;
+    test_window: string;
+    leakage_guarantee: string;
+  };
 }
