@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: demandvision-ai
+    name: demandvision-pro
     env: python
     region: oregon
     plan: free

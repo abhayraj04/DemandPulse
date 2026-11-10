@@ -2,7 +2,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-echo "=== DemandVision AI Build Script ==="
+echo "=== DemandVision Pro Build Script ==="
 
 echo "--> 1. Installing Python dependencies..."
 pip install --upgrade pip
@@ -17,9 +17,9 @@ npm run build
 cd ..
 
 echo "--> 4. Verifying Build Assets..."
-if [ ! -d "frontend/dist" ]; then
-  echo "Error: frontend/dist was not created!"
+if [ ! -d "frontend/dist" ] || [ ! -f "frontend/dist/index.html" ]; then
+  echo "Error: frontend/dist/index.html was not created!"
   exit 1
 fi
 
-echo "=== Build Complete Successfully! ==="
+echo "=== DemandVision Pro Build Complete Successfully! ==="

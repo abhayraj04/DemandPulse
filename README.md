@@ -126,6 +126,29 @@ Open **`http://127.0.0.1:8000`** in your browser. Interactive OpenAPI documentat
 
 ---
 
+### Cloud Deployment (GitHub & Render)
+
+#### 1. Push to GitHub
+```bash
+git add .
+git commit -m "feat: complete DemandVision Pro ready for deployment"
+git branch -M main
+git remote add origin https://github.com/YOUR-USERNAME/DemandVision-Pro.git
+git push -u origin main
+```
+*A GitHub Actions CI workflow (`.github/workflows/ci.yml`) will automatically trigger, verifying the build and running the 16 unit tests on Ubuntu.*
+
+#### 2. Deploy to Render (Blueprint)
+1. Navigate to [dashboard.render.com](https://dashboard.render.com).
+2. Click **New +** -> **Blueprint**.
+3. Select your repository `DemandVision-Pro`.
+4. Render automatically reads [`render.yaml`](render.yaml), installs Python 3.11 & Node 20, runs [`build.sh`](build.sh), and starts the single-service app.
+5. Click **Apply** to deploy live.
+
+*See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker and manual deployment steps.*
+
+---
+
 ### Key Formulas
 
 1. **Safety Stock ($SS$):**

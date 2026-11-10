@@ -48,3 +48,4 @@ Thumbs.db
 # data/processed/*.csv
 *.log
 .pytest_cache/
+pytest-cache-files-*/
