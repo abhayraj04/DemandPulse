@@ -73,19 +73,23 @@ export const Layout: React.FC<LayoutProps> = ({
   children,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarHidden, setSidebarHidden] = useState(false);
   const current = tabTitles[activeTab];
 
   return (
     <div className="flex min-h-screen bg-navy-900 text-slate-100">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        <Sidebar
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          datasetAvailable={datasetAvailable}
-          totalRecords={totalRecords}
-        />
-      </div>
+      {/* Desktop Sidebar (Hideable) */}
+      {!sidebarHidden && (
+        <div className="hidden lg:block transition-all duration-300">
+          <Sidebar
+            activeTab={activeTab}
+            onTabChange={onTabChange}
+            datasetAvailable={datasetAvailable}
+            totalRecords={totalRecords}
+            onHideSidebar={() => setSidebarHidden(true)}
+          />
+        </div>
+      )}
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
@@ -116,6 +120,8 @@ export const Layout: React.FC<LayoutProps> = ({
           datasetAvailable={datasetAvailable}
           onOpenDataset={() => onTabChange('dataset')}
           onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+          sidebarHidden={sidebarHidden}
+          onToggleSidebar={() => setSidebarHidden(!sidebarHidden)}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">

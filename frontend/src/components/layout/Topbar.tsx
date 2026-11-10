@@ -8,6 +8,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   ExternalLink,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 
 interface TopbarProps {
@@ -16,6 +18,8 @@ interface TopbarProps {
   datasetAvailable: boolean;
   onOpenDataset: () => void;
   onToggleMobileMenu?: () => void;
+  sidebarHidden?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({
@@ -24,6 +28,8 @@ export const Topbar: React.FC<TopbarProps> = ({
   datasetAvailable,
   onOpenDataset,
   onToggleMobileMenu,
+  sidebarHidden,
+  onToggleSidebar,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -53,8 +59,28 @@ export const Topbar: React.FC<TopbarProps> = ({
 
   return (
     <header className="h-16 bg-navy-950/80 backdrop-blur-md border-b border-surface-border sticky top-0 z-20 px-4 lg:px-8 flex items-center justify-between">
-      {/* Left: Mobile Toggle & Page Title */}
+      {/* Left: Nav Toggle & Page Title */}
       <div className="flex items-center space-x-3">
+        {onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            title={sidebarHidden ? "Show Navigation Bar (Expand)" : "Hide Navigation Bar (Full Width Screen)"}
+            className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-surface-card hover:bg-slate-800 border border-surface-border rounded-lg transition shadow-sm"
+          >
+            {sidebarHidden ? (
+              <>
+                <PanelLeftOpen className="w-4 h-4 text-brand-cyan" />
+                <span className="text-[11px]">Show Nav</span>
+              </>
+            ) : (
+              <>
+                <PanelLeftClose className="w-4 h-4 text-slate-400" />
+                <span className="text-[11px]">Hide Nav</span>
+              </>
+            )}
+          </button>
+        )}
+
         {onToggleMobileMenu && (
           <button
             onClick={onToggleMobileMenu}

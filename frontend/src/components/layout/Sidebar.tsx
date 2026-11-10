@@ -15,6 +15,7 @@ import {
   Sliders,
   Grid,
   Binary,
+  PanelLeftClose,
 } from 'lucide-react';
 
 export type NavTab =
@@ -37,6 +38,7 @@ interface SidebarProps {
   onTabChange: (tab: NavTab) => void;
   datasetAvailable: boolean;
   totalRecords: number;
+  onHideSidebar?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -44,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onTabChange,
   datasetAvailable,
   totalRecords,
+  onHideSidebar,
 }) => {
   const navItems = [
     {
@@ -123,21 +126,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className="w-64 bg-navy-950 border-r border-surface-border flex flex-col h-screen sticky top-0 select-none z-30">
       {/* Brand Header */}
-      <div className="p-5 border-b border-surface-border flex items-center space-x-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-cyan via-brand-blue to-brand-purple flex items-center justify-center shadow-lg shadow-cyan-500/20">
-          <TrendingUp className="w-6 h-6 text-navy-950 font-bold" />
+      <div className="p-4 border-b border-surface-border flex items-center justify-between">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-cyan via-brand-blue to-brand-purple flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <TrendingUp className="w-5 h-5 text-navy-950 font-bold" />
+          </div>
+          <div>
+            <h1 className="font-extrabold text-sm tracking-tight text-white flex items-center space-x-1.5">
+              <span>DemandPulse</span>
+              <span className="text-brand-cyan text-[10px] font-mono px-1 py-0.5 rounded bg-brand-cyan/15 border border-brand-cyan/30">
+                AI
+              </span>
+            </h1>
+            <p className="text-[10px] text-slate-400 font-medium tracking-wide truncate max-w-[125px]">
+              Bharat Intelligence
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-extrabold text-base tracking-tight text-white flex items-center space-x-1.5">
-            <span>DemandPulse</span>
-            <span className="text-brand-cyan text-[10px] font-mono px-1.5 py-0.5 rounded bg-brand-cyan/15 border border-brand-cyan/30">
-              AI
-            </span>
-          </h1>
-          <p className="text-[10px] text-slate-400 font-medium tracking-wide truncate max-w-[145px]">
-            Bharat Retail Intelligence
-          </p>
-        </div>
+
+        {onHideSidebar && (
+          <button
+            onClick={onHideSidebar}
+            title="Hide Navigation Bar (Full Width Screen)"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-surface-border transition"
+          >
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Navigation List */}
