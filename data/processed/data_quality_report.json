@@ -1,0 +1,44 @@
+{
+  "is_valid": true,
+  "total_rows": 913000,
+  "total_columns": 4,
+  "columns": [
+    "date",
+    "store",
+    "item",
+    "sales"
+  ],
+  "missing_columns": [],
+  "missing_values": {
+    "date": 0,
+    "store": 0,
+    "item": 0,
+    "sales": 0
+  },
+  "missing_percentages": {
+    "date": 0.0,
+    "store": 0.0,
+    "item": 0.0,
+    "sales": 0.0
+  },
+  "duplicate_count": 0,
+  "date_range": {
+    "start": "2013-01-01",
+    "end": "2017-12-31",
+    "total_days": 1826
+  },
+  "store_count": 10,
+  "item_count": 50,
+  "sales_summary": {
+    "mean": 52.25,
+    "std": 28.8,
+    "min": 0.0,
+    "p25": 30.0,
+    "median": 47.0,
+    "p75": 70.0,
+    "max": 231.0,
+    "zero_sales_count": 1,
+    "total_units_sold": 47704512
+  },
+  "issues": []
+}
