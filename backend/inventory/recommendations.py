@@ -84,34 +84,40 @@ def get_inventory_recommendations(
         total_suggested_reorder_cost += order_cost
 
         # Economic Order Quantity (EOQ): sqrt(2*D*S / H)
-        # S = order setup cost ($50), H = annual holding cost (20% of unit cost)
+        # S = order setup cost (₹500 INR), H = annual holding cost (20% of unit cost)
         annual_demand = avg_demand * 365
-        holding_cost_annual = max(0.50, prod["unit_cost"] * 0.20)
-        eoq = round(math.sqrt((2 * annual_demand * 50) / holding_cost_annual))
+        holding_cost_annual = max(1.0, prod["unit_cost"] * 0.20)
+        eoq = round(math.sqrt((2 * annual_demand * 500) / holding_cost_annual))
 
         recommendations.append({
             "item_id": int(item_id),
+            "product_id": prod.get("product_id", f"P{int(item_id):03d}"),
             "item_name": prod["name"],
             "sku": prod["sku"],
             "category": prod["category"],
             "brand": prod["brand"],
+            "package_size": prod.get("package_size", "Standard Pack"),
             "unit_price": prod["unit_price"],
             "unit_cost": prod["unit_cost"],
             "margin_pct": prod["margin_pct"],
             "store_id": store_val,
             "current_stock": int(stock),
             "stock_value_usd": stock_value,
+            "stock_value_inr": stock_value,
             "avg_daily_demand": metrics["avg_daily_demand"],
             "safety_stock": metrics["safety_stock"],
             "reorder_point": metrics["reorder_point"],
             "days_remaining": metrics["days_of_inventory_remaining"],
             "suggested_order": suggested_order,
             "suggested_order_cost_usd": order_cost,
+            "suggested_order_cost_inr": order_cost,
             "revenue_at_risk_usd": revenue_risk,
+            "revenue_at_risk_inr": revenue_risk,
             "eoq": eoq,
             "status": metrics["status"],
             "severity": metrics["severity"],
             "alert_message": metrics["alert_message"],
+            "forecast_availability": prod.get("forecast_availability", "Available"),
         })
 
     # Sort so critical risks appear at top
@@ -123,6 +129,8 @@ def get_inventory_recommendations(
         "store_name": store_meta["name"],
         "lead_time_days": lead_time_days,
         "target_service_level": target_service_level,
+        "currency": "INR",
+        "currency_symbol": "₹",
         "summary": {
             "total_items_analyzed": len(recommendations),
             "critical_stockout_risks": critical_count,
@@ -130,12 +138,15 @@ def get_inventory_recommendations(
             "healthy_levels": healthy_count,
             "total_suggested_reorder_units": total_suggested_reorder_units,
             "total_suggested_reorder_cost_usd": round(total_suggested_reorder_cost, 2),
+            "total_suggested_reorder_cost_inr": round(total_suggested_reorder_cost, 2),
             "total_revenue_at_risk_usd": round(total_revenue_at_risk, 2),
+            "total_revenue_at_risk_inr": round(total_revenue_at_risk, 2),
             "total_working_capital_held_usd": round(total_working_capital, 2),
+            "total_working_capital_held_inr": round(total_working_capital, 2),
         },
         "recommendations": recommendations,
         "disclaimer": (
             "Safety stock and reorder point calculations are derived from historical sales variance and user parameters. "
-            "Real product names and unit costs illustrate practical enterprise replenishment planning."
+            "Estimated based on configured demo prices. Store locations and Indian product names illustrate enterprise inventory replenishment intelligence."
         )
     }

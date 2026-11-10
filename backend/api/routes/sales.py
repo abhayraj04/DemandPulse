@@ -108,7 +108,7 @@ def get_product_rankings(
 @router.get("/sales/stores")
 def get_store_rankings():
     """Returns all 10 stores ranked by total sales, city, region, and market share."""
-    from backend.data.catalog import get_store
+    from backend.data.catalog import get_store, get_product
     loader = get_data_loader()
     if not loader.is_available():
         raise HTTPException(status_code=503, detail="Dataset not loaded.")
@@ -124,12 +124,13 @@ def get_store_rankings():
     )
 
     total_chain_units = float(df["sales"].sum())
+    avg_inr_price = sum(get_product(i)["configured_price_inr"] for i in range(1, 51)) / 50.0
     enriched_stores = []
     for _, row in grouped.iterrows():
         s_id = int(row["store"])
         st_info = get_store(s_id)
         units = int(row["total_units"])
-        est_rev = round(units * 14.85, 2)
+        est_rev = round(units * avg_inr_price, 2)
         enriched_stores.append({
             "store_id": s_id,
             "store_name": st_info["name"],

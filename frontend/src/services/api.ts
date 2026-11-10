@@ -99,12 +99,27 @@ export const api = {
     return res.json();
   },
 
-  async getCatalogProducts(params?: { category?: string; search?: string }) {
+  async getCatalogProducts(params?: { category?: string; brand?: string; search?: string; forecast_only?: boolean }) {
     const query = new URLSearchParams();
     if (params?.category) query.set('category', params.category);
+    if (params?.brand) query.set('brand', params.brand);
     if (params?.search) query.set('search', params.search);
+    if (params?.forecast_only !== undefined) query.set('forecast_only', params.forecast_only.toString());
     const res = await fetch(`${API_BASE}/catalog/products?${query.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch product catalog');
+    return res.json();
+  },
+
+  async updateProductPrice(productId: string, priceInr: number) {
+    const res = await fetch(`${API_BASE}/catalog/products/${encodeURIComponent(productId)}/price`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price_inr: priceInr }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to update configured price');
+    }
     return res.json();
   },
 

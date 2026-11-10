@@ -21,6 +21,7 @@ import { InventoryRecommendationResponse, InventoryItemRecommendation, StoreProf
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
+import { formatINR, formatIndianNumber } from '../utils/formatters';
 
 export const InventoryPage: React.FC<{
   selectedStore: number | undefined;
@@ -91,11 +92,13 @@ export const InventoryPage: React.FC<{
   const handleExportCSV = () => {
     if (!data?.recommendations) return;
     const headers = [
-      'SKU',
+      'Product ID',
       'Product Name',
+      'Brand',
       'Category',
-      'Unit Cost ($)',
-      'Unit Price ($)',
+      'Package Size',
+      'Unit Cost (₹)',
+      'Unit Price (₹)',
       'Avg Daily Demand',
       'Current Stock',
       'Safety Stock',
@@ -103,13 +106,15 @@ export const InventoryPage: React.FC<{
       'Days Remaining',
       'Inventory Status',
       'Suggested Order (Units)',
-      'Capital Required ($)',
-      'Revenue at Risk ($)',
+      'Reorder Cost (₹)',
+      'Revenue at Risk (₹)',
     ];
     const rows = data.recommendations.map((r) => [
-      r.sku || `SKU-${r.item_id}`,
+      r.product_id || r.sku || `P0${r.item_id}`,
       `"${r.item_name}"`,
+      r.brand || 'RetailBrand',
       r.category || 'General',
+      r.package_size || 'Standard Pack',
       r.unit_cost?.toFixed(2) ?? '0.00',
       r.unit_price?.toFixed(2) ?? '0.00',
       r.avg_daily_demand.toFixed(1),
@@ -119,8 +124,8 @@ export const InventoryPage: React.FC<{
       r.days_remaining,
       r.status,
       r.suggested_order,
-      (r.suggested_order_cost_usd ?? (r.suggested_order * 10)).toFixed(2),
-      (r.revenue_at_risk_usd ?? 0).toFixed(2),
+      (r.suggested_order_cost_inr ?? r.suggested_order_cost_usd ?? (r.suggested_order * 10)).toFixed(2),
+      (r.revenue_at_risk_inr ?? r.revenue_at_risk_usd ?? 0).toFixed(2),
     ]);
     const csvContent =
       'data:text/csv;charset=utf-8,' +
@@ -347,28 +352,22 @@ export const InventoryPage: React.FC<{
               color="amber"
             />
             <MetricCard
-              title="PO Capital Required"
-              value={`$${(data?.summary.total_suggested_reorder_cost_usd ?? 0).toLocaleString(undefined, {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}`}
-              subtitle="Cash needed to fulfill suggested orders"
+              title="Reorder Cost"
+              value={formatINR(data?.summary.total_suggested_reorder_cost_inr ?? data?.summary.total_suggested_reorder_cost_usd)}
+              subtitle="Estimated based on configured demo prices"
               icon={DollarSign}
               color="emerald"
             />
             <MetricCard
               title="Revenue at Risk"
-              value={`$${(data?.summary.total_revenue_at_risk_usd ?? 0).toLocaleString(undefined, {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}`}
-              subtitle="Potential lost sales from understocked SKUs"
+              value={formatINR(data?.summary.total_revenue_at_risk_inr ?? data?.summary.total_revenue_at_risk_usd)}
+              subtitle="Estimated based on configured demo prices"
               icon={TrendingUp}
               color="amber"
             />
             <MetricCard
               title="Total Suggested Reorder"
-              value={(data?.summary.total_suggested_reorder_units ?? 0).toLocaleString()}
+              value={formatIndianNumber(data?.summary.total_suggested_reorder_units)}
               subtitle="Total units across recommended items"
               icon={Truck}
               color="blue"
@@ -383,7 +382,7 @@ export const InventoryPage: React.FC<{
                   Automated SKU Replenishment Recommendations
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Calculated dynamically from forecast demand rate, standard deviation, and unit cost economics
+                  Calculated dynamically from forecast demand rate, standard deviation, and configured unit costs
                 </p>
               </div>
               <div className="flex items-center space-x-2">
@@ -397,8 +396,9 @@ export const InventoryPage: React.FC<{
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-surface-border text-slate-400 font-semibold uppercase tracking-wider">
-                    <th className="py-3 px-3">Product SKU & Name</th>
-                    <th className="py-3 px-3 text-right">Unit Cost</th>
+                    <th className="py-3 px-3">Product ID & Name</th>
+                    <th className="py-3 px-3">Package Size</th>
+                    <th className="py-3 px-3 text-right">Unit Cost (₹)</th>
                     <th className="py-3 px-3 text-right">Current Stock</th>
                     <th className="py-3 px-3 text-right">Daily Demand</th>
                     <th className="py-3 px-3 text-right">Safety Stock</th>
@@ -406,7 +406,7 @@ export const InventoryPage: React.FC<{
                     <th className="py-3 px-3 text-right">Days Left</th>
                     <th className="py-3 px-3 text-center">Status</th>
                     <th className="py-3 px-3 text-right">Suggested Order</th>
-                    <th className="py-3 px-3 text-right">PO Capital ($)</th>
+                    <th className="py-3 px-3 text-right">Reorder Cost (₹)</th>
                     <th className="py-3 px-3 text-center">Action</th>
                   </tr>
                 </thead>
@@ -422,17 +422,25 @@ export const InventoryPage: React.FC<{
                         }`}
                       >
                         <td className="py-3 px-3 font-sans">
-                          <div className="font-semibold text-white">{item.item_name}</div>
-                          <div className="text-[11px] text-slate-400 flex items-center space-x-1.5 mt-0.5">
-                            <span className="text-brand-cyan font-mono">{item.sku || `SKU-${item.item_id}`}</span>
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-[10px] font-mono px-1 py-0.5 rounded bg-navy-950 text-brand-cyan border border-surface-border font-bold">
+                              {item.product_id || item.sku || `P0${item.item_id}`}
+                            </span>
+                            <span className="font-semibold text-white">{item.item_name}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 flex items-center space-x-1.5 mt-0.5 font-sans">
+                            <span className="text-slate-300">{item.brand}</span>
                             <span>•</span>
-                            <span className="bg-navy-900 text-slate-300 px-1.5 py-0.2 rounded border border-surface-border">
+                            <span className="bg-navy-900 text-slate-400 px-1.5 py-0.2 rounded border border-surface-border">
                               {item.category || 'General'}
                             </span>
                           </div>
                         </td>
+                        <td className="py-3 px-3 text-slate-400 font-sans">
+                          {item.package_size || 'Standard Pack'}
+                        </td>
                         <td className="py-3 px-3 text-right text-slate-300">
-                          ${(item.unit_cost ?? 12.5).toFixed(2)}
+                          {formatINR(item.unit_cost, { showDecimals: true })}
                         </td>
                         <td className="py-3 px-3 text-right text-slate-200">
                           {item.current_stock.toLocaleString()}
@@ -467,7 +475,7 @@ export const InventoryPage: React.FC<{
                         </td>
                         <td className="py-3 px-3 text-right font-bold text-emerald-400">
                           {item.suggested_order > 0
-                            ? `$${(item.suggested_order_cost_usd ?? (item.suggested_order * (item.unit_cost ?? 12.5))).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                            ? formatINR(item.suggested_order_cost_inr ?? item.suggested_order_cost_usd)
                             : '—'}
                         </td>
                         <td className="py-3 px-3 text-center font-sans">
@@ -515,13 +523,15 @@ export const InventoryPage: React.FC<{
                 . When current stock reaches this threshold, an order must be dispatched.
               </p>
               <p>
-                • <strong className="text-slate-300">Financial Impact:</strong> PO Capital is computed as{' '}
+                • <strong className="text-slate-300">Financial Impact:</strong> Reorder Cost is computed as{' '}
                 <code className="text-brand-cyan bg-navy-950 px-1 py-0.5 rounded">
-                  Suggested Units × Unit Cost
+                  Suggested Order Units × Configured Demo Unit Cost (₹)
                 </code>
-                , giving procurement leaders exact cash outlay numbers for ERP purchase order sign-off.
+                , giving procurement leaders exact cash outlay numbers for purchase order generation.
               </p>
-              <p className="text-[11px] text-slate-500 italic">{data?.disclaimer}</p>
+              <p className="text-[11px] text-brand-cyan font-mono italic">
+                * Estimated based on configured demo prices. Product names and store locations illustrate enterprise retail SaaS operations.
+              </p>
             </div>
           </div>
         </>

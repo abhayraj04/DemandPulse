@@ -164,13 +164,18 @@ class ForecastService:
             "store": store,
             "store_name": store_meta["name"],
             "item": item,
+            "product_id": prod_meta.get("product_id", f"P{item:03d}"),
             "product_name": prod_meta["name"],
             "sku": prod_meta["sku"],
             "category": prod_meta["category"],
             "brand": prod_meta["brand"],
+            "package_size": prod_meta.get("package_size", "Standard Pack"),
             "unit_price": prod_meta["unit_price"],
+            "configured_price_inr": prod_meta.get("configured_price_inr", prod_meta["unit_price"]),
             "unit_cost": prod_meta["unit_cost"],
             "margin_pct": prod_meta["margin_pct"],
+            "currency": "INR",
+            "currency_symbol": "₹",
             "model_id": model_id_clean,
             "model_name": next((m["name"] for m in AVAILABLE_MODELS if m["id"] == model_id_clean), model_id_clean),
             "horizon_days": horizon,
@@ -188,7 +193,7 @@ class ForecastService:
             "history": history_points,
             "forecast": forecast_points,
             "combined_series": history_points + forecast_points,
-            "disclaimer": "Forecasts are probabilistic mathematical estimates based on historical patterns, not guaranteed future outcomes."
+            "disclaimer": "Estimated based on configured demo prices. Forecasts are probabilistic mathematical estimates based on historical patterns, not guaranteed future outcomes."
         }
         
         self._cache[cache_key] = result

@@ -10,6 +10,7 @@ import { SalesAnalyticsPage } from './pages/SalesAnalyticsPage';
 import { TimeSeriesPage } from './pages/TimeSeriesPage';
 import { DemandForecastingPage } from './pages/DemandForecastingPage';
 import { InventoryPage } from './pages/InventoryPage';
+import { ProductCatalogPage } from './pages/ProductCatalogPage';
 import { ModelPerformancePage } from './pages/ModelPerformancePage';
 import { InsightsPage } from './pages/InsightsPage';
 import { DatasetPage } from './pages/DatasetPage';
@@ -70,6 +71,15 @@ export const App: React.FC = () => {
           <InventoryPage
             selectedStore={selectedStore}
             onStoreChange={setSelectedStore}
+          />
+        );
+      case 'catalog':
+        return (
+          <ProductCatalogPage
+            onSelectProductForForecast={(itemId) => {
+              setSelectedItem(itemId);
+              setActiveTab('forecasting');
+            }}
           />
         );
       case 'models':

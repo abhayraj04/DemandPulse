@@ -11,6 +11,7 @@ import {
   Info,
   ChevronRight,
   ShieldCheck,
+  Package,
 } from 'lucide-react';
 
 export type NavTab =
@@ -19,6 +20,7 @@ export type NavTab =
   | 'timeseries'
   | 'forecasting'
   | 'inventory'
+  | 'catalog'
   | 'models'
   | 'insights'
   | 'dataset'
@@ -64,6 +66,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'inventory' as NavTab,
       label: 'Inventory Intelligence',
       icon: Boxes,
+    },
+    {
+      id: 'catalog' as NavTab,
+      label: 'Product Catalog & Pricing',
+      icon: Package,
+      badge: '100 SKUs',
     },
     {
       id: 'models' as NavTab,

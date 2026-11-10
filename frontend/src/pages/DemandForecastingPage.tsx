@@ -27,6 +27,7 @@ import { api } from '../services/api';
 import { ForecastResponse, ForecastModelInfo, ProductCatalogItem, StoreProfile } from '../types/api';
 import { MetricCard } from '../components/common/MetricCard';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
+import { formatINR, formatIndianNumber } from '../utils/formatters';
 
 export const DemandForecastingPage: React.FC<{
   selectedStore: number | undefined;
@@ -129,7 +130,7 @@ export const DemandForecastingPage: React.FC<{
               {stores.length > 0
                 ? stores.map((s) => (
                     <option key={s.store_id} value={s.store_id}>
-                      {s.store_id}. {s.short_name || s.name} ({s.city})
+                      Store {s.store_id} — {s.city} ({s.state})
                     </option>
                   ))
                 : Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
@@ -142,16 +143,16 @@ export const DemandForecastingPage: React.FC<{
 
           {/* Product Selector */}
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1.5">Commercial Product SKU</label>
+            <label className="text-xs font-semibold text-slate-300 block mb-1.5">Indian Retail Product SKU</label>
             <select
               value={item}
               onChange={(e) => setItem(Number(e.target.value))}
               className="w-full bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-3 py-2 text-xs font-medium focus:border-brand-cyan truncate"
             >
               {catalog.length > 0
-                ? catalog.map((it) => (
-                    <option key={it.item_id} value={it.item_id}>
-                      #{it.item_id} • {it.name} (${it.unit_price})
+                ? catalog.filter((it) => it.item_id !== null).map((it) => (
+                    <option key={it.item_id} value={it.item_id!}>
+                      {it.product_id || `P0${it.item_id}`} • {it.name} ({formatINR(it.configured_price_inr ?? it.unit_price)})
                     </option>
                   ))
                 : Array.from({ length: 50 }, (_, i) => i + 1).map((it) => (
@@ -229,12 +230,12 @@ export const DemandForecastingPage: React.FC<{
 
               <div className="flex items-center space-x-4 font-mono text-right">
                 <div>
-                  <span className="text-slate-400 text-[10px]">Unit Retail Price</span>
-                  <p className="text-sm font-bold text-brand-emerald">${forecastData.unit_price?.toFixed(2) ?? '15.00'}</p>
+                  <span className="text-slate-400 text-[10px]">Configured Unit Price</span>
+                  <p className="text-sm font-bold text-brand-emerald">{formatINR(forecastData.unit_price, { showDecimals: true })}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-[10px]">Gross Margin</span>
-                  <p className="text-sm font-bold text-brand-cyan">{forecastData.margin_pct?.toFixed(1) ?? '50.0'}%</p>
+                  <span className="text-slate-400 text-[10px]">Estimated Profit</span>
+                  <p className="text-sm font-bold text-brand-cyan">{formatINR(forecastData?.summary.predicted_gross_profit)}</p>
                 </div>
               </div>
             </div>
@@ -243,16 +244,16 @@ export const DemandForecastingPage: React.FC<{
           {/* Forecast Summary KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
-              title="Projected Demand Volume"
-              value={forecastData?.summary.total_predicted_units.toLocaleString() ?? '0'}
-              subtitle={`Total units over next ${horizon} days`}
+              title="Forecasted Sales Units"
+              value={formatIndianNumber(forecastData?.summary.total_predicted_units)}
+              subtitle={`Total forecast volume over next ${horizon} days`}
               icon={Layers}
               color="cyan"
             />
             <MetricCard
-              title="Projected Gross Revenue"
-              value={`$${(forecastData?.summary.predicted_revenue ?? 0).toLocaleString()}`}
-              subtitle={`Gross Profit: $${(forecastData?.summary.predicted_gross_profit ?? 0).toLocaleString()} (${forecastData?.margin_pct?.toFixed(1) ?? 50}%)`}
+              title="Forecasted Revenue"
+              value={formatINR(forecastData?.summary.predicted_revenue)}
+              subtitle="Estimated based on configured demo prices"
               icon={TrendingUp}
               color="emerald"
             />

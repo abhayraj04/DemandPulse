@@ -1,15 +1,19 @@
 export interface ProductCatalogItem {
-  item_id: number;
+  product_id?: string;
+  item_id: number | null;
   name: string;
   category: string;
   brand: string;
+  package_size?: string;
+  configured_price_inr?: number;
   unit_price: number;
   unit_cost: number;
   margin_pct: number;
-  lead_time_days: number;
-  moq: number;
-  supplier: string;
+  lead_time_days?: number;
+  moq?: number;
+  supplier?: string;
   sku: string;
+  forecast_availability: 'Available' | 'Catalog Only';
 }
 
 export interface StoreProfile {
@@ -23,6 +27,7 @@ export interface StoreProfile {
   warehouse_hub: string;
   manager: string;
   tier: string;
+  illustrative?: boolean;
 }
 
 export interface ExecutiveOverview {
@@ -36,6 +41,10 @@ export interface ExecutiveOverview {
   estimated_gross_revenue?: number;
   estimated_gross_profit?: number;
   average_gross_margin_pct?: number;
+  currency?: string;
+  currency_symbol?: string;
+  revenue_disclaimer?: string;
+  data_architecture_note?: string;
   top_product_details?: ProductCatalogItem;
   top_store_details?: StoreProfile;
   monthly_trend: { date: string; sales: number }[];
@@ -44,11 +53,14 @@ export interface ExecutiveOverview {
     item: string;
     item_id: number;
     sales: number;
+    product_id?: string;
     product_name?: string;
     category?: string;
     brand?: string;
+    package_size?: string;
     sku?: string;
     unit_price?: number;
+    configured_price_inr?: number;
     revenue?: number;
   }[];
   store_comparison: {
@@ -198,27 +210,33 @@ export interface ModelPerformanceResult {
 
 export interface InventoryItemRecommendation {
   item_id: number;
+  product_id?: string;
   item_name: string;
   sku?: string;
   category?: string;
   brand?: string;
+  package_size?: string;
   unit_price?: number;
   unit_cost?: number;
   margin_pct?: number;
   store_id: number;
   current_stock: number;
   stock_value_usd?: number;
+  stock_value_inr?: number;
   avg_daily_demand: number;
   safety_stock: number;
   reorder_point: number;
   days_remaining: number;
   suggested_order: number;
   suggested_order_cost_usd?: number;
+  suggested_order_cost_inr?: number;
   revenue_at_risk_usd?: number;
+  revenue_at_risk_inr?: number;
   eoq?: number;
   status: "CRITICAL_STOCKOUT_RISK" | "REORDER_REQUIRED" | "HEALTHY" | "EXCESS_INVENTORY";
   severity: "high" | "medium" | "normal" | "low";
   alert_message: string;
+  forecast_availability?: string;
 }
 
 export interface InventoryRecommendationResponse {
@@ -226,6 +244,8 @@ export interface InventoryRecommendationResponse {
   store_name?: string;
   lead_time_days: number;
   target_service_level: number;
+  currency?: string;
+  currency_symbol?: string;
   summary: {
     total_items_analyzed: number;
     critical_stockout_risks: number;
@@ -233,8 +253,11 @@ export interface InventoryRecommendationResponse {
     healthy_levels: number;
     total_suggested_reorder_units: number;
     total_suggested_reorder_cost_usd?: number;
+    total_suggested_reorder_cost_inr?: number;
     total_revenue_at_risk_usd?: number;
+    total_revenue_at_risk_inr?: number;
     total_working_capital_held_usd?: number;
+    total_working_capital_held_inr?: number;
   };
   recommendations: InventoryItemRecommendation[];
   disclaimer: string;

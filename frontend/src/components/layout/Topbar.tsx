@@ -31,9 +31,9 @@ export const Topbar: React.FC<TopbarProps> = ({
     {
       id: 1,
       type: 'warning',
-      title: 'Item 15 Stockout Warning',
+      title: 'P015 (Sugar) Reorder Alert',
       time: '10m ago',
-      desc: 'Inventory falls below supplier lead time in Store 2.',
+      desc: 'Inventory approaching safety buffer in Store 2 (Bengaluru).',
     },
     {
       id: 2,
@@ -47,7 +47,7 @@ export const Topbar: React.FC<TopbarProps> = ({
       type: 'info',
       title: 'Weekend Surge Pattern Active',
       time: '3h ago',
-      desc: 'Weekend sales uplift +32.4% above weekday average.',
+      desc: 'Weekend sales uplift +32.4% above weekday baseline.',
     },
   ];
 

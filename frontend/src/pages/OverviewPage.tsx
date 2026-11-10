@@ -29,6 +29,8 @@ import { ExecutiveOverview, ProductCatalogItem, StoreProfile } from '../types/ap
 import { MetricCard } from '../components/common/MetricCard';
 import { FilterBar } from '../components/common/FilterBar';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
+import { formatINR, formatIndianNumber } from '../utils/formatters';
+import { Info } from 'lucide-react';
 
 export const OverviewPage: React.FC<{
   selectedStore: number | undefined;
@@ -91,6 +93,19 @@ export const OverviewPage: React.FC<{
 
   return (
     <div className="space-y-6">
+      {/* Educational Data Architecture Disclaimer Banner */}
+      <div className="p-3.5 rounded-xl bg-navy-900 border border-surface-border text-xs flex flex-wrap items-center justify-between gap-2 shadow-sm">
+        <div className="flex items-center space-x-2 text-slate-300">
+          <Info className="w-4 h-4 text-brand-cyan flex-shrink-0" />
+          <span>
+            <strong className="text-white">Data Architecture:</strong> Historical sales units from public benchmark time series. Indian product names and store cities represent an illustrative localization layer.
+          </span>
+        </div>
+        <span className="text-[11px] font-mono text-brand-emerald bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">
+          Estimated based on configured demo prices
+        </span>
+      </div>
+
       {/* Filter Bar */}
       <FilterBar
         selectedStore={selectedStore}
@@ -106,35 +121,35 @@ export const OverviewPage: React.FC<{
       {/* Top Metric Cards - Physical Volume & Commercial Revenue */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          title="Total Units Sold"
-          value={data?.total_units_sold.toLocaleString() ?? '0'}
-          subtitle={`Verified sales across ${data?.number_of_stores ?? 10} stores`}
+          title="Total Sales Units"
+          value={formatIndianNumber(data?.total_units_sold)}
+          subtitle={`Verified historical units across ${data?.number_of_stores ?? 10} stores`}
           change={data?.sales_growth_pct}
-          changeLabel="MoM Growth"
+          changeLabel="Annual Growth"
           icon={ShoppingBag}
           color="cyan"
         />
         <MetricCard
-          title="Gross Revenue (Est.)"
-          value={`$${((data?.estimated_gross_revenue ?? 708400000) / 1000000).toFixed(1)}M`}
-          subtitle={`Gross Margin: $${((data?.estimated_gross_profit ?? 410000000) / 1000000).toFixed(1)}M (${data?.average_gross_margin_pct ?? 58}%)`}
+          title="Estimated Revenue"
+          value={formatINR(data?.estimated_gross_revenue, { compact: true })}
+          subtitle="Estimated based on configured demo prices"
           icon={DollarSign}
           color="emerald"
         />
         <MetricCard
           title="Top Performing Location"
-          value={data?.top_store_details?.short_name ?? (data?.best_performing_store ? `Store #${data.best_performing_store}` : 'Chain')}
-          subtitle={data?.top_store_details ? `${data.top_store_details.city}, ${data.top_store_details.state} • ${data.top_store_details.tier}` : 'Dallas NorthPark (13.7%)'}
+          value={data?.top_store_details?.city ?? (data?.best_performing_store ? `Store #${data.best_performing_store}` : 'Chain')}
+          subtitle={data?.top_store_details ? `${data.top_store_details.name} • ${data.top_store_details.tier}` : 'Store 2 — Bengaluru (13.7%)'}
           icon={Store}
           badge="Leader"
           color="blue"
         />
         <MetricCard
           title="Top Product SKU"
-          value={data?.top_product_details ? `#${data.top_product_details.item_id} • ${data.top_product_details.brand}` : 'Item #15'}
-          subtitle={data?.top_product_details ? `${data.top_product_details.name} ($${data.top_product_details.unit_price})` : 'Sparkling Alpine Mineral Water 12-Pack'}
+          value={data?.top_product_details ? `${data.top_product_details.product_id || `P0${data.top_product_details.item_id}`} • ${data.top_product_details.name}` : 'P015 • Sugar'}
+          subtitle={data?.top_product_details ? `Configured Unit Price: ${formatINR(data.top_product_details.configured_price_inr ?? data.top_product_details.unit_price)}` : 'Item #15'}
           icon={Package}
-          badge="Best Seller"
+          badge="Top Volume"
           color="purple"
         />
       </div>
@@ -156,7 +171,7 @@ export const OverviewPage: React.FC<{
                 <p className="text-base font-bold text-white mt-0.5">{cat.total_units.toLocaleString()} units</p>
                 <div className="flex justify-between items-center text-[10px] text-slate-400 mt-1">
                   <span className="text-brand-cyan font-bold">{cat.volume_share_pct}% vol</span>
-                  <span className="text-brand-emerald">${(cat.estimated_revenue / 1000000).toFixed(1)}M</span>
+                  <span className="text-brand-emerald">{formatINR(cat.estimated_revenue, { compact: true })}</span>
                 </div>
               </div>
             ))}

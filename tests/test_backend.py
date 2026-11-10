@@ -187,6 +187,52 @@ def test_api_insights():
     assert "title" in res["insights"][0]
 
 
+def test_indian_retail_catalog_and_stores():
+    """Verifies 100 Indian products catalog, 10 Indian cities, and forecast availability."""
+    from backend.data.catalog import get_all_products, get_product_by_id, get_all_stores, get_store
+    prods = get_all_products()
+    assert len(prods) == 100
+
+    # P001 to P050 available
+    p1 = get_product_by_id("P001")
+    assert p1 is not None
+    assert p1["name"] == "Aashirvaad Whole Wheat Atta"
+    assert p1["brand"] == "Aashirvaad"
+    assert p1["package_size"] == "5 kg"
+    assert p1["category"] == "Staples"
+    assert p1["forecast_availability"] == "Available"
+    assert p1["configured_price_inr"] > 0
+
+    # P051 to P100 catalog only
+    p51 = get_product_by_id("P051")
+    assert p51 is not None
+    assert p51["name"] == "Coca-Cola"
+    assert p51["forecast_availability"] == "Catalog Only"
+
+    p100 = get_product_by_id("P100")
+    assert p100 is not None
+    assert p100["name"] == "Catch Black Pepper"
+    assert p100["forecast_availability"] == "Catalog Only"
+
+    # 10 Indian Store locations
+    stores = get_all_stores()
+    assert len(stores) == 10
+    cities = {s["city"] for s in stores}
+    expected_cities = {"Hyderabad", "Bengaluru", "Mumbai", "Delhi", "Pune", "Chennai", "Kolkata", "Ahmedabad", "Jaipur", "Patna"}
+    assert cities == expected_cities
+
+
+def test_update_demo_price():
+    """Verifies configurable demo price updates dynamically recalculate."""
+    from backend.data.catalog import update_product_price, get_product_by_id
+    updated = update_product_price("P008", 35.0) # Tata Salt
+    assert updated is not None
+    assert updated["configured_price_inr"] == 35.0
+    assert updated["unit_price"] == 35.0
+    p = get_product_by_id("P008")
+    assert p["configured_price_inr"] == 35.0
+
+
 def test_frontend_dist_integration():
     """Verifies production frontend build and SPA assets exist."""
     from backend.config import FRONTEND_DIST_DIR

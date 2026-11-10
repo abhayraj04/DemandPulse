@@ -31,6 +31,10 @@ const tabTitles: Record<NavTab, { title: string; subtitle: string }> = {
     title: 'Inventory Intelligence',
     subtitle: 'Safety stock, reorder point calculations, and stockout mitigation recommendations',
   },
+  catalog: {
+    title: 'Indian Retail Product Catalog & Pricing',
+    subtitle: '100 FMCG SKUs, forecast availability mappings, and configurable INR (₹) demonstration prices',
+  },
   models: {
     title: 'Model Performance Center',
     subtitle: 'Chronological walk-forward validation leaderboard and residual distribution',

@@ -11,9 +11,22 @@ interface FilterBarProps {
   storeOptions?: number[];
   itemOptions?: number[];
   showItemFilter?: boolean;
-  productCatalog?: { item_id: number; name: string; sku?: string; category?: string }[];
-  storeRegistry?: { store_id: number; name: string; short_name?: string }[];
+  productCatalog?: { item_id: number | null; name: string; sku?: string; category?: string }[];
+  storeRegistry?: { store_id: number; name: string; short_name?: string; city?: string }[];
 }
+
+const DEFAULT_INDIAN_STORES: Record<number, string> = {
+  1: 'Store 1 — Hyderabad',
+  2: 'Store 2 — Bengaluru',
+  3: 'Store 3 — Mumbai',
+  4: 'Store 4 — Delhi',
+  5: 'Store 5 — Pune',
+  6: 'Store 6 — Chennai',
+  7: 'Store 7 — Kolkata',
+  8: 'Store 8 — Ahmedabad',
+  9: 'Store 9 — Jaipur',
+  10: 'Store 10 — Patna',
+};
 
 export const FilterBar: React.FC<FilterBarProps> = ({
   selectedStore,
@@ -47,10 +60,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             onChange={(e) => onStoreChange(e.target.value ? Number(e.target.value) : undefined)}
             className="bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-brand-cyan hover:border-slate-600 transition-colors max-w-[210px] truncate"
           >
-            <option value="">All Stores (Chain-wide)</option>
+            <option value="">All Stores (National Chain)</option>
             {storeOptions.map((st) => {
               const info = storeRegistry?.find((s) => s.store_id === st);
-              const label = info ? `${st}. ${info.short_name || info.name}` : `Store ${st}`;
+              const label = info ? `${st}. ${info.short_name || info.city || info.name}` : (DEFAULT_INDIAN_STORES[st] || `Store ${st}`);
               return (
                 <option key={st} value={st}>
                   {label}
