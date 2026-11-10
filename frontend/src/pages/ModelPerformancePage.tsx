@@ -267,7 +267,7 @@ export const ModelPerformancePage: React.FC<{
             <div>
               <h4 className="font-semibold text-slate-200">Strict Chronological Validation Standard</h4>
               <p className="mt-1">
-                Retail time-series data possesses strict temporal ordering and autocorrelation. Random train/test splits (e.g. standard K-Fold cross-validation) cause catastrophic data leakage by training on future observations to predict the past. DemandVision AI enforces chronological walk-forward holdout splits, ensuring models are tested under real operational deployment conditions.
+                Retail time-series data possesses strict temporal ordering and autocorrelation. Random train/test splits (e.g. standard K-Fold cross-validation) cause catastrophic data leakage by training on future observations to predict the past. DemandPulse enforces chronological walk-forward holdout splits, ensuring models are tested under real operational deployment conditions.
               </p>
             </div>
           </div>

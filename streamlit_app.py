@@ -1,4 +1,4 @@
-"""DemandVision Pro — Streamlit Application
+"""DemandPulse — Streamlit Application
 Enterprise AI Retail Sales Forecasting & Inventory Intelligence Platform
 Enriched with the Bharat Retail Intelligence Suite (100 Indian FMCG SKUs & 10 Metro Cities).
 """
@@ -30,7 +30,7 @@ from backend.analytics.data_science_lab import get_data_science_lab_analytics
 # PAGE CONFIGURATION
 # ==========================================
 st.set_page_config(
-    page_title="DemandVision Pro — AI Retail Intelligence",
+    page_title="DemandPulse — AI Retail Intelligence",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -149,7 +149,7 @@ with st.sidebar:
             </div>
             <div>
                 <div style="font-weight: 800; font-size: 1.1rem; color: #FFFFFF; line-height: 1.2;">
-                    DemandVision <span style="font-size: 0.65rem; background: rgba(6,182,212,0.2); color: #06B6D4; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(6,182,212,0.4);">PRO</span>
+                    DemandPulse <span style="font-size: 0.65rem; background: rgba(6,182,212,0.2); color: #06B6D4; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(6,182,212,0.4);">AI</span>
                 </div>
                 <div style="font-size: 0.7rem; color: #94A3B8;">Bharat Retail Intelligence</div>
             </div>

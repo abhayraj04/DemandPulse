@@ -176,7 +176,7 @@ const DataScienceLabPage: React.FC = () => {
                 <p className="text-sm text-slate-300 leading-relaxed">
                   In time-series forecasting, standard k-fold cross-validation or randomized train/test splits cause
                   <span className="text-rose-400 font-semibold"> catastrophic temporal leakage</span> by training on future observations to predict past dates.
-                  DemandVision AI strictly enforces <span className="text-cyan-400 font-semibold">Chronological Walk-Forward Validation</span>.
+                  DemandPulse strictly enforces <span className="text-cyan-400 font-semibold">Chronological Walk-Forward Validation</span>.
                 </p>
 
                 {/* Timeline Diagram */}

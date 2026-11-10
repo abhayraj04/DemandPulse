@@ -25,7 +25,7 @@ def test_health_endpoint():
     """Verifies that the health status returns healthy and app metadata."""
     res = get_health_status()
     assert res.status == "healthy"
-    assert res.app_name in ("DemandVision Pro", "DemandVision AI")
+    assert res.app_name in ("DemandPulse", "DemandVision Pro", "DemandVision AI")
     assert res.dataset_loaded is True
 
 

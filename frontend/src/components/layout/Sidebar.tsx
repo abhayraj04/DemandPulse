@@ -129,9 +129,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <div>
           <h1 className="font-extrabold text-base tracking-tight text-white flex items-center space-x-1.5">
-            <span>DemandVision</span>
+            <span>DemandPulse</span>
             <span className="text-brand-cyan text-[10px] font-mono px-1.5 py-0.5 rounded bg-brand-cyan/15 border border-brand-cyan/30">
-              PRO
+              AI
             </span>
           </h1>
           <p className="text-[10px] text-slate-400 font-medium tracking-wide truncate max-w-[145px]">

@@ -1,4 +1,4 @@
-"""DemandVision AI - FastAPI Main Application
+"""DemandPulse - FastAPI Main Application
 Serves the REST API and the React production build with single-service SPA fallback.
 """
 

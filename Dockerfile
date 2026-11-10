@@ -1,5 +1,5 @@
 # ==========================================
-# Multi-Stage Dockerfile for DemandVision Pro
+# Multi-Stage Dockerfile for DemandPulse
 # ==========================================
 
 # Stage 1: Build Frontend Assets

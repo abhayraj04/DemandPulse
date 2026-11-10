@@ -2,7 +2,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-echo "=== DemandVision Pro Build Script ==="
+echo "=== DemandPulse Build Script ==="
 
 echo "--> 1. Installing Python dependencies..."
 pip install --upgrade pip
@@ -22,4 +22,4 @@ if [ ! -d "frontend/dist" ] || [ ! -f "frontend/dist/index.html" ]; then
   exit 1
 fi
 
-echo "=== DemandVision Pro Build Complete Successfully! ==="
+echo "=== DemandPulse Build Complete Successfully! ==="

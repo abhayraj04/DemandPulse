@@ -60,7 +60,7 @@ const tabTitles: Record<NavTab, { title: string; subtitle: string }> = {
     subtitle: 'Data validation metrics, quality reports, and Kaggle dataset upload',
   },
   about: {
-    title: 'About DemandVision Pro',
+    title: 'About DemandPulse',
     subtitle: 'Architectural documentation, time-series methodology, and interview preparation guide',
   },
 };

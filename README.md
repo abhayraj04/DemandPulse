@@ -1,8 +1,9 @@
-# DemandVision Pro
+# DemandPulse
 ## Enterprise AI Retail Sales Forecasting & Inventory Intelligence Platform
 
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.14-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.32+-FF4B4B.svg)](https://streamlit.io/)
 [![React](https://img.shields.io/badge/React-18.2-61DAFB.svg)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6.svg)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC.svg)](https://tailwindcss.com/)
@@ -17,7 +18,7 @@
 
 ### Executive Overview
 
-**DemandVision Pro** is an enterprise-grade retail sales forecasting and inventory intelligence platform. Built from the ground up as a production full-stack Data Science and Machine Learning application, it empowers retail planners, supply chain directors, and merchandising leads to uncover historical consumption patterns, predict future SKU-level customer demand with probabilistic confidence bounds, and execute automated, statistically sound replenishment decisions.
+**DemandPulse** is an enterprise-grade retail sales forecasting and inventory intelligence platform. Built from the ground up as a production full-stack Data Science and Machine Learning application, it empowers retail planners, supply chain directors, and merchandising leads to uncover historical consumption patterns, predict future SKU-level customer demand with probabilistic confidence bounds, and execute automated, statistically sound replenishment decisions.
 
 The application operates on the genuine **Kaggle Store Item Demand Forecasting Challenge** dataset (913,000 verified daily transactions across 10 stores and 50 products spanning 2013 to 2017) enriched with an **Indian Retail Localization Layer** (100 FMCG SKUs across 7 categories, 10 metro cities, configurable INR (₹) demonstration prices, and automated purchase order generation).
 
@@ -44,7 +45,9 @@ The application operates on the genuine **Kaggle Store Item Demand Forecasting C
 
 ### Platform Architecture
 
-DemandVision Pro is packaged as **ONE Web Service** deployable on Render, Heroku, AWS, or Docker, bundling the React 18 production build directly into FastAPI's static mount with client-side SPA catch-all routing:
+DemandPulse is deployable as:
+1. **ONE Web Service** on Render, Heroku, or Docker (bundling React 18 SPA + FastAPI REST API).
+2. **Pure Python Interactive Streamlit App** (`streamlit_app.py`) for 1-click Streamlit Community Cloud deployment.
 
 ```
 [Browser / Mobile Client]
@@ -68,7 +71,6 @@ DemandVision Pro is packaged as **ONE Web Service** deployable on Render, Heroku
   │  ├── /api/analytics/heatmap                 │
   │  ├── /api/datascience/lab                   │
   │  ├── /api/inventory/recommendations         │
-  │  ├── /api/insights                          │
   │  └── /* ──> React 18 SPA Production Bundle  │
   └──────────────────┬──────────────────────────┘
                      │
@@ -93,8 +95,8 @@ DemandVision Pro is packaged as **ONE Web Service** deployable on Render, Heroku
 
 #### 1. Clone & Set Up Backend
 ```bash
-git clone https://github.com/your-username/DemandVision-AI.git
-cd DemandVision-AI
+git clone https://github.com/abhayraj04/DemandVision.git
+cd DemandVision
 
 # Create virtual environment
 python -m venv venv
@@ -104,44 +106,51 @@ source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-#### 2. Build Frontend
+#### 2. Run Streamlit App Directly
 ```bash
+streamlit run streamlit_app.py
+```
+*Opens interactive Streamlit interface on `http://localhost:8501`.*
+
+#### 3. Or Build & Run Full-Stack FastAPI + React Web Service
+```bash
+# Build React Frontend
 cd frontend
 npm install
 npm run build
 cd ..
-```
 
-#### 3. Run Automated Tests
-```bash
+# Run Automated Backend Tests (16 passed)
 python -m pytest tests/test_backend.py -v
-```
-*(All 16 test cases pass including catalog integrity, walk-forward validation, advanced analytics, and single-service static asset serving).*
 
-#### 4. Launch Production Server
-```bash
+# Start FastAPI Production Web Service
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 Open **`http://127.0.0.1:8000`** in your browser. Interactive OpenAPI documentation is accessible at **`http://127.0.0.1:8000/api/docs`**.
 
 ---
 
-### Cloud Deployment (GitHub & Render)
+### Cloud Deployment (Streamlit, Render & GitHub)
 
 #### 1. Push to GitHub
 ```bash
 git add .
-git commit -m "feat: complete DemandVision Pro ready for deployment"
+git commit -m "feat: complete DemandPulse ready for deployment"
 git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/DemandVision-Pro.git
+git remote add origin https://github.com/abhayraj04/DemandVision.git
 git push -u origin main
 ```
 *A GitHub Actions CI workflow (`.github/workflows/ci.yml`) will automatically trigger, verifying the build and running the 16 unit tests on Ubuntu.*
 
-#### 2. Deploy to Render (Blueprint)
+#### 2. Deploy to Streamlit Community Cloud
+1. Go to [share.streamlit.io](https://share.streamlit.io) and connect GitHub.
+2. Select repository `abhayraj04/DemandVision`, branch `main`, and main file path `streamlit_app.py`.
+3. Click **Deploy!**
+
+#### 3. Deploy to Render (Blueprint)
 1. Navigate to [dashboard.render.com](https://dashboard.render.com).
 2. Click **New +** -> **Blueprint**.
-3. Select your repository `DemandVision-Pro`.
+3. Select your repository `abhayraj04/DemandVision`.
 4. Render automatically reads [`render.yaml`](render.yaml), installs Python 3.11 & Node 20, runs [`build.sh`](build.sh), and starts the single-service app.
 5. Click **Apply** to deploy live.
 
@@ -168,7 +177,7 @@ git push -u origin main
 
 ### Interview Preparation & Recruiter Walkthrough
 
-When presenting DemandVision Pro in interviews, highlight these three technical achievements:
+When presenting DemandPulse in interviews, highlight these three technical achievements:
 
 1. **Zero Data Leakage:** Explain why standard cross-validation destroys time-series validity and how chronological walk-forward splits preserve future out-of-sample purity.
 2. **Feature Engineering & Explainability:** Discuss why 7-day autoregressive lags dominate retail demand (capturing weekly shopping patterns) and show how XGBoost feature importance validates this domain intuition.

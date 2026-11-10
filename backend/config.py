@@ -40,6 +40,6 @@ PORT = int(os.getenv("PORT", 8000))
 HOST = os.getenv("HOST", "0.0.0.0")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
-APP_NAME = "DemandVision Pro"
+APP_NAME = "DemandPulse"
 APP_VERSION = "2.0.0"
 API_PREFIX = "/api"

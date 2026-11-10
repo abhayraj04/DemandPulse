@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: demandvision-pro
+    name: demandpulse
     env: python
     region: oregon
     plan: free

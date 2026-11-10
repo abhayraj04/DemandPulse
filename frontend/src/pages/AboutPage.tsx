@@ -22,10 +22,10 @@ export const AboutPage: React.FC = () => {
           <span>Technical Architecture & Recruiter Briefing</span>
         </div>
         <h2 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
-          DemandVision AI Platform Overview
+          DemandPulse Platform Overview
         </h2>
         <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
-          DemandVision AI is a production-grade retail demand forecasting and inventory intelligence platform. Built from scratch with an emphasis on mathematical correctness, statistical explainability, and real-time interactive decision support.
+          DemandPulse is a production-grade retail demand forecasting and inventory intelligence platform. Built from scratch with an emphasis on mathematical correctness, statistical explainability, and real-time interactive decision support.
         </p>
       </div>
 
