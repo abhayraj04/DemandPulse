@@ -91,6 +91,31 @@ export const api = {
     return res.json();
   },
 
+  async getCategories(store?: number) {
+    const query = new URLSearchParams();
+    if (store) query.set('store', store.toString());
+    const res = await fetch(`${API_BASE}/sales/categories?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch categories');
+    return res.json();
+  },
+
+  async getCatalogProducts(params?: { category?: string; search?: string }) {
+    const query = new URLSearchParams();
+    if (params?.category) query.set('category', params.category);
+    if (params?.search) query.set('search', params.search);
+    const res = await fetch(`${API_BASE}/catalog/products?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch product catalog');
+    return res.json();
+  },
+
+  async getCatalogStores(region?: string) {
+    const query = new URLSearchParams();
+    if (region) query.set('region', region);
+    const res = await fetch(`${API_BASE}/catalog/stores?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch store profiles');
+    return res.json();
+  },
+
   // Time-Series Explorer
   async getTimeSeriesDecomposition(params: {
     store?: number;

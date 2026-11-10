@@ -10,10 +10,14 @@ import {
   Info,
   ShoppingCart,
   RefreshCw,
+  Download,
+  DollarSign,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 
 import { api } from '../services/api';
-import { InventoryRecommendationResponse, InventoryItemRecommendation } from '../types/api';
+import { InventoryRecommendationResponse, InventoryItemRecommendation, StoreProfile } from '../types/api';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
@@ -27,11 +31,20 @@ export const InventoryPage: React.FC<{
   const [serviceLevel, setServiceLevel] = useState<number>(95);
   const [stockOverride, setStockOverride] = useState<string>('');
   const [topN, setTopN] = useState<number>(15);
+  const [stores, setStores] = useState<StoreProfile[]>([]);
+
+  // What-If Sandbox Parameters
+  const [demandSurgePct, setDemandSurgePct] = useState<number>(0); // -20% to +50%
+  const [supplierDelayDays, setSupplierDelayDays] = useState<number>(0); // 0 to 10 days
 
   const [data, setData] = useState<InventoryRecommendationResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderPlacedItems, setOrderPlacedItems] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    api.getCatalogStores().then((res) => setStores(res.stores)).catch(console.error);
+  }, []);
 
   const fetchRecommendations = async () => {
     try {
@@ -39,11 +52,29 @@ export const InventoryPage: React.FC<{
       setError(null);
       const res = await api.getInventoryRecommendations({
         store,
-        lead_time_days: leadTime,
+        lead_time_days: leadTime + supplierDelayDays,
         target_service_level: serviceLevel,
         top_n_items: topN,
         current_stock_override: stockOverride ? Number(stockOverride) : undefined,
       });
+
+      // Apply demand surge modifier if set in simulation
+      if (demandSurgePct !== 0 && res.recommendations) {
+        const factor = 1 + (demandSurgePct / 100);
+        res.recommendations = res.recommendations.map((item) => {
+          const adjDemand = item.avg_daily_demand * factor;
+          const adjDaysLeft = adjDemand > 0 ? Number((item.current_stock / adjDemand).toFixed(1)) : 999;
+          const isCritical = adjDaysLeft < (leadTime + supplierDelayDays);
+          return {
+            ...item,
+            avg_daily_demand: Number(adjDemand.toFixed(1)),
+            days_remaining: adjDaysLeft,
+            status: isCritical ? 'CRITICAL_STOCKOUT_RISK' : item.status,
+            severity: isCritical ? 'high' : item.severity,
+          };
+        });
+      }
+
       setData(res);
       onStoreChange(store);
     } catch (err: any) {
@@ -55,28 +86,86 @@ export const InventoryPage: React.FC<{
 
   useEffect(() => {
     fetchRecommendations();
-  }, [store, leadTime, serviceLevel, topN]);
+  }, [store, leadTime, serviceLevel, topN, demandSurgePct, supplierDelayDays]);
 
-  const handlePlaceOrder = (itemId: number, units: number) => {
+  const handleExportCSV = () => {
+    if (!data?.recommendations) return;
+    const headers = [
+      'SKU',
+      'Product Name',
+      'Category',
+      'Unit Cost ($)',
+      'Unit Price ($)',
+      'Avg Daily Demand',
+      'Current Stock',
+      'Safety Stock',
+      'Reorder Point (ROP)',
+      'Days Remaining',
+      'Inventory Status',
+      'Suggested Order (Units)',
+      'Capital Required ($)',
+      'Revenue at Risk ($)',
+    ];
+    const rows = data.recommendations.map((r) => [
+      r.sku || `SKU-${r.item_id}`,
+      `"${r.item_name}"`,
+      r.category || 'General',
+      r.unit_cost?.toFixed(2) ?? '0.00',
+      r.unit_price?.toFixed(2) ?? '0.00',
+      r.avg_daily_demand.toFixed(1),
+      r.current_stock,
+      r.safety_stock,
+      r.reorder_point,
+      r.days_remaining,
+      r.status,
+      r.suggested_order,
+      (r.suggested_order_cost_usd ?? (r.suggested_order * 10)).toFixed(2),
+      (r.revenue_at_risk_usd ?? 0).toFixed(2),
+    ]);
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `DemandVision_PO_Store_${store}_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePlaceOrder = (itemId: number) => {
     setOrderPlacedItems((prev) => ({ ...prev, [itemId]: true }));
   };
+
+  const currentStoreProfile = stores.find((s) => s.store_id === store);
 
   return (
     <div className="space-y-6">
       {/* Inventory Parameters & Assumptions Form */}
       <div className="p-4 bg-surface-card border border-surface-border rounded-xl shadow-lg space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-surface-border">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-surface-border">
           <div className="flex items-center space-x-2 text-xs font-bold text-white uppercase tracking-wider">
             <Sliders className="w-4 h-4 text-brand-cyan" />
-            <span>Inventory Assumptions & Lead Time Controls</span>
+            <span>Inventory Assumptions & Replenishment Controls</span>
           </div>
-          <span className="text-[11px] text-brand-emerald font-mono flex items-center">
-            <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Documented Statistical Safety Buffer
-          </span>
+          <div className="flex items-center space-x-3">
+            <span className="text-[11px] text-brand-emerald font-mono flex items-center">
+              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Documented Statistical Safety Buffer
+            </span>
+            <button
+              onClick={handleExportCSV}
+              disabled={!data?.recommendations?.length}
+              className="px-3 py-1 bg-surface-border hover:bg-navy-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5 text-brand-cyan" />
+              <span>Export PO (.CSV)</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {/* Store Selector */}
+          {/* Store Selector with City & Name */}
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1.5">Target Store</label>
             <select
@@ -84,18 +173,26 @@ export const InventoryPage: React.FC<{
               onChange={(e) => setStore(Number(e.target.value))}
               className="w-full bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-3 py-2 text-xs font-medium focus:border-brand-cyan"
             >
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
-                <option key={s} value={s}>
-                  Store {s}
-                </option>
-              ))}
+              {stores.length > 0 ? (
+                stores.map((s) => (
+                  <option key={s.store_id} value={s.store_id}>
+                    Store {s.store_id} — {s.city}, {s.state} ({s.tier})
+                  </option>
+                ))
+              ) : (
+                Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
+                  <option key={s} value={s}>
+                    Store {s}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
           {/* Supplier Lead Time */}
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-              Supplier Lead Time (Days)
+              Base Supplier Lead Time
             </label>
             <select
               value={leadTime}
@@ -153,39 +250,126 @@ export const InventoryPage: React.FC<{
             </button>
           </div>
         </div>
+
+        {/* What-If Scenario Sandbox */}
+        <div className="p-3.5 bg-navy-900/90 border border-brand-cyan/20 rounded-xl space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-xs font-bold text-brand-cyan">
+              <Zap className="w-4 h-4 text-brand-amber" />
+              <span>Executive What-If Simulation Sandbox</span>
+            </div>
+            <span className="text-[11px] text-slate-400 font-mono">
+              Dynamically stress-test supply chains against disruptions
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            {/* Demand Surge Slider */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center text-slate-300">
+                <span>Demand Surge / Black Swan Shock:</span>
+                <span className={`font-mono font-bold ${demandSurgePct > 0 ? 'text-amber-400' : demandSurgePct < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                  {demandSurgePct > 0 ? `+${demandSurgePct}%` : `${demandSurgePct}%`}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="-20"
+                max="50"
+                step="5"
+                value={demandSurgePct}
+                onChange={(e) => setDemandSurgePct(Number(e.target.value))}
+                className="w-full h-1.5 bg-navy-950 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
+              />
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                <span>-20% (Lull)</span>
+                <span>0% (Baseline)</span>
+                <span>+25% (Promo)</span>
+                <span>+50% (Flash Sale)</span>
+              </div>
+            </div>
+
+            {/* Supplier Lead Time Delay */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center text-slate-300">
+                <span>Port Congestion / Supplier Delay:</span>
+                <span className={`font-mono font-bold ${supplierDelayDays > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                  +{supplierDelayDays} days delay
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="1"
+                value={supplierDelayDays}
+                onChange={(e) => setSupplierDelayDays(Number(e.target.value))}
+                className="w-full h-1.5 bg-navy-950 rounded-lg appearance-none cursor-pointer accent-brand-amber"
+              />
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                <span>0d (On Time)</span>
+                <span>+3d (Customs Lag)</span>
+                <span>+7d (Major Bottleneck)</span>
+                <span>+10d (Disruption)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Selected Store Profile Badge */}
+        {currentStoreProfile && (
+          <div className="flex flex-wrap items-center justify-between text-xs bg-navy-900/60 px-3 py-2 rounded-lg border border-surface-border text-slate-400">
+            <div>
+              <span className="text-white font-semibold">{currentStoreProfile.name}</span>
+              <span className="mx-2">•</span>
+              <span>{currentStoreProfile.city}, {currentStoreProfile.state} ({currentStoreProfile.region})</span>
+              <span className="mx-2">•</span>
+              <span>{currentStoreProfile.sqft.toLocaleString()} sq.ft ({currentStoreProfile.tier})</span>
+            </div>
+            <div className="font-mono text-slate-300">
+              Hub: <span className="text-brand-cyan">{currentStoreProfile.warehouse_hub}</span> | Lead: {leadTime + supplierDelayDays}d
+            </div>
+          </div>
+        )}
       </div>
 
       {isLoading && !data ? (
         <LoadingSkeleton rows={4} height="h-32" />
       ) : (
         <>
-          {/* Summary KPIs */}
+          {/* Summary KPIs with Financial Unit Economics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
               title="Critical Stockout Risks"
               value={data?.summary.critical_stockout_risks ?? 0}
-              subtitle="Stock runs out before shipment arrives"
+              subtitle="Stock depletes before shipment arrives"
               icon={ShieldAlert}
               color="amber"
             />
             <MetricCard
-              title="Reorders Needed"
-              value={data?.summary.reorders_needed ?? 0}
-              subtitle="Current stock below reorder point"
-              icon={ShoppingCart}
-              color="cyan"
+              title="PO Capital Required"
+              value={`$${(data?.summary.total_suggested_reorder_cost_usd ?? 0).toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}`}
+              subtitle="Cash needed to fulfill suggested orders"
+              icon={DollarSign}
+              color="emerald"
             />
             <MetricCard
-              title="Healthy Inventory SKUs"
-              value={data?.summary.healthy_levels ?? 0}
-              subtitle="Stock levels within optimal range"
-              icon={CheckCircle2}
-              color="emerald"
+              title="Revenue at Risk"
+              value={`$${(data?.summary.total_revenue_at_risk_usd ?? 0).toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}`}
+              subtitle="Potential lost sales from understocked SKUs"
+              icon={TrendingUp}
+              color="amber"
             />
             <MetricCard
               title="Total Suggested Reorder"
               value={(data?.summary.total_suggested_reorder_units ?? 0).toLocaleString()}
-              subtitle="Total units to purchase"
+              subtitle="Total units across recommended items"
               icon={Truck}
               color="blue"
             />
@@ -199,19 +383,22 @@ export const InventoryPage: React.FC<{
                   Automated SKU Replenishment Recommendations
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Calculated dynamically from forecast demand rate and historical standard deviation
+                  Calculated dynamically from forecast demand rate, standard deviation, and unit cost economics
                 </p>
               </div>
-              <span className="text-xs font-mono text-slate-400 bg-navy-900 px-3 py-1 rounded-lg border border-surface-border">
-                Store #{store} • Lead Time: {leadTime}d • Service Level: {serviceLevel}%
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-mono text-slate-400 bg-navy-900 px-3 py-1 rounded-lg border border-surface-border">
+                  Store #{store} • Effective Lead Time: {leadTime + supplierDelayDays}d • Target SL: {serviceLevel}%
+                </span>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-surface-border text-slate-400 font-semibold uppercase tracking-wider">
-                    <th className="py-3 px-3">Product SKU</th>
+                    <th className="py-3 px-3">Product SKU & Name</th>
+                    <th className="py-3 px-3 text-right">Unit Cost</th>
                     <th className="py-3 px-3 text-right">Current Stock</th>
                     <th className="py-3 px-3 text-right">Daily Demand</th>
                     <th className="py-3 px-3 text-right">Safety Stock</th>
@@ -219,6 +406,7 @@ export const InventoryPage: React.FC<{
                     <th className="py-3 px-3 text-right">Days Left</th>
                     <th className="py-3 px-3 text-center">Status</th>
                     <th className="py-3 px-3 text-right">Suggested Order</th>
+                    <th className="py-3 px-3 text-right">PO Capital ($)</th>
                     <th className="py-3 px-3 text-center">Action</th>
                   </tr>
                 </thead>
@@ -233,8 +421,18 @@ export const InventoryPage: React.FC<{
                           item.status === 'CRITICAL_STOCKOUT_RISK' ? 'bg-rose-500/5' : ''
                         }`}
                       >
-                        <td className="py-3 px-3 font-sans font-semibold text-white">
-                          {item.item_name}
+                        <td className="py-3 px-3 font-sans">
+                          <div className="font-semibold text-white">{item.item_name}</div>
+                          <div className="text-[11px] text-slate-400 flex items-center space-x-1.5 mt-0.5">
+                            <span className="text-brand-cyan font-mono">{item.sku || `SKU-${item.item_id}`}</span>
+                            <span>•</span>
+                            <span className="bg-navy-900 text-slate-300 px-1.5 py-0.2 rounded border border-surface-border">
+                              {item.category || 'General'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-right text-slate-300">
+                          ${(item.unit_cost ?? 12.5).toFixed(2)}
                         </td>
                         <td className="py-3 px-3 text-right text-slate-200">
                           {item.current_stock.toLocaleString()}
@@ -251,7 +449,7 @@ export const InventoryPage: React.FC<{
                         <td className="py-3 px-3 text-right text-slate-300">
                           <span
                             className={
-                              item.days_remaining < leadTime
+                              item.days_remaining < (leadTime + supplierDelayDays)
                                 ? 'text-rose-400 font-bold'
                                 : 'text-slate-300'
                             }
@@ -267,10 +465,15 @@ export const InventoryPage: React.FC<{
                             ? `${item.suggested_order.toLocaleString()} units`
                             : '—'}
                         </td>
+                        <td className="py-3 px-3 text-right font-bold text-emerald-400">
+                          {item.suggested_order > 0
+                            ? `$${(item.suggested_order_cost_usd ?? (item.suggested_order * (item.unit_cost ?? 12.5))).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                            : '—'}
+                        </td>
                         <td className="py-3 px-3 text-center font-sans">
                           {item.suggested_order > 0 ? (
                             <button
-                              onClick={() => handlePlaceOrder(item.item_id, item.suggested_order)}
+                              onClick={() => handlePlaceOrder(item.item_id)}
                               disabled={isOrdered}
                               className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-all ${
                                 isOrdered
@@ -281,7 +484,7 @@ export const InventoryPage: React.FC<{
                               {isOrdered ? 'PO Created ✓' : 'Create PO'}
                             </button>
                           ) : (
-                            <span className="text-[11px] text-slate-400">Optimal</span>
+                            <span className="text-[11px] text-slate-500">Optimal</span>
                           )}
                         </td>
                       </tr>
@@ -311,7 +514,14 @@ export const InventoryPage: React.FC<{
                 </code>
                 . When current stock reaches this threshold, an order must be dispatched.
               </p>
-              <p className="text-[11px] text-slate-400 italic">{data?.disclaimer}</p>
+              <p>
+                • <strong className="text-slate-300">Financial Impact:</strong> PO Capital is computed as{' '}
+                <code className="text-brand-cyan bg-navy-950 px-1 py-0.5 rounded">
+                  Suggested Units × Unit Cost
+                </code>
+                , giving procurement leaders exact cash outlay numbers for ERP purchase order sign-off.
+              </p>
+              <p className="text-[11px] text-slate-500 italic">{data?.disclaimer}</p>
             </div>
           </div>
         </>

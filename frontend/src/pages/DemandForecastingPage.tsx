@@ -9,6 +9,7 @@ import {
   Sliders,
   CheckCircle2,
   TrendingUp,
+  Package,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -23,7 +24,7 @@ import {
 } from 'recharts';
 
 import { api } from '../services/api';
-import { ForecastResponse, ForecastModelInfo } from '../types/api';
+import { ForecastResponse, ForecastModelInfo, ProductCatalogItem, StoreProfile } from '../types/api';
 import { MetricCard } from '../components/common/MetricCard';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 
@@ -39,6 +40,8 @@ export const DemandForecastingPage: React.FC<{
   const [horizon, setHorizon] = useState<number>(30);
 
   const [availableModels, setAvailableModels] = useState<ForecastModelInfo[]>([]);
+  const [catalog, setCatalog] = useState<ProductCatalogItem[]>([]);
+  const [stores, setStores] = useState<StoreProfile[]>([]);
   const [forecastData, setForecastData] = useState<ForecastResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,11 +52,11 @@ export const DemandForecastingPage: React.FC<{
     if (selectedItem && selectedItem !== item) setItem(selectedItem);
   }, [selectedStore, selectedItem]);
 
-  // Load model definitions
+  // Load model definitions and catalog metadata
   useEffect(() => {
-    api.getForecastModels().then((res) => {
-      setAvailableModels(res.models);
-    }).catch(console.error);
+    api.getForecastModels().then((res) => setAvailableModels(res.models)).catch(console.error);
+    api.getCatalogProducts().then((res) => setCatalog(res.products)).catch(console.error);
+    api.getCatalogStores().then((res) => setStores(res.stores)).catch(console.error);
   }, []);
 
   const runForecast = async () => {
@@ -117,33 +120,45 @@ export const DemandForecastingPage: React.FC<{
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Store Selector */}
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1.5">Target Store</label>
+            <label className="text-xs font-semibold text-slate-300 block mb-1.5">Target Location</label>
             <select
               value={store}
               onChange={(e) => setStore(Number(e.target.value))}
               className="w-full bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-3 py-2 text-xs font-medium focus:border-brand-cyan"
             >
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
-                <option key={s} value={s}>
-                  Store {s}
-                </option>
-              ))}
+              {stores.length > 0
+                ? stores.map((s) => (
+                    <option key={s.store_id} value={s.store_id}>
+                      {s.store_id}. {s.short_name || s.name} ({s.city})
+                    </option>
+                  ))
+                : Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
+                    <option key={s} value={s}>
+                      Store {s}
+                    </option>
+                  ))}
             </select>
           </div>
 
           {/* Product Selector */}
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1.5">Target Product SKU</label>
+            <label className="text-xs font-semibold text-slate-300 block mb-1.5">Commercial Product SKU</label>
             <select
               value={item}
               onChange={(e) => setItem(Number(e.target.value))}
-              className="w-full bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-3 py-2 text-xs font-medium focus:border-brand-cyan"
+              className="w-full bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-3 py-2 text-xs font-medium focus:border-brand-cyan truncate"
             >
-              {Array.from({ length: 50 }, (_, i) => i + 1).map((it) => (
-                <option key={it} value={it}>
-                  Item #{it}
-                </option>
-              ))}
+              {catalog.length > 0
+                ? catalog.map((it) => (
+                    <option key={it.item_id} value={it.item_id}>
+                      #{it.item_id} • {it.name} (${it.unit_price})
+                    </option>
+                  ))
+                : Array.from({ length: 50 }, (_, i) => i + 1).map((it) => (
+                    <option key={it} value={it}>
+                      Item #{it}
+                    </option>
+                  ))}
             </select>
           </div>
 
@@ -189,33 +204,69 @@ export const DemandForecastingPage: React.FC<{
         <LoadingSkeleton rows={4} height="h-36" />
       ) : (
         <>
+          {/* Selected Product Commercial Profile Banner */}
+          {forecastData?.product_name && (
+            <div className="p-4 rounded-xl bg-gradient-to-r from-brand-cyan/15 via-surface-card to-brand-blue/15 border border-brand-cyan/30 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 rounded-lg bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40">
+                  <Package className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-white text-sm">{forecastData.product_name}</span>
+                    <span className="text-[10px] font-mono bg-navy-900 text-brand-cyan px-2 py-0.5 rounded border border-surface-border">
+                      SKU: {forecastData.sku || `SKU-${forecastData.item}`}
+                    </span>
+                    <span className="text-[10px] font-semibold bg-surface-hover text-slate-300 px-2 py-0.5 rounded border border-surface-border">
+                      {forecastData.category || 'General'}
+                    </span>
+                  </div>
+                  <p className="text-slate-400 text-[11px] mt-0.5">
+                    Location: <strong className="text-slate-200">{forecastData.store_name || `Store #${forecastData.store}`}</strong> • Brand: <strong className="text-slate-200">{forecastData.brand || 'RetailBrand'}</strong>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-4 font-mono text-right">
+                <div>
+                  <span className="text-slate-400 text-[10px]">Unit Retail Price</span>
+                  <p className="text-sm font-bold text-brand-emerald">${forecastData.unit_price?.toFixed(2) ?? '15.00'}</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[10px]">Gross Margin</span>
+                  <p className="text-sm font-bold text-brand-cyan">{forecastData.margin_pct?.toFixed(1) ?? '50.0'}%</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Forecast Summary KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
-              title="Total Predicted Volume"
+              title="Projected Demand Volume"
               value={forecastData?.summary.total_predicted_units.toLocaleString() ?? '0'}
-              subtitle={`Cumulative units over next ${horizon} days`}
+              subtitle={`Total units over next ${horizon} days`}
               icon={Layers}
               color="cyan"
             />
             <MetricCard
-              title="Avg Daily Forecast"
-              value={forecastData?.summary.avg_daily_forecast.toFixed(1) ?? '0.0'}
-              subtitle="Expected daily demand rate"
-              icon={Calendar}
+              title="Projected Gross Revenue"
+              value={`$${(forecastData?.summary.predicted_revenue ?? 0).toLocaleString()}`}
+              subtitle={`Gross Profit: $${(forecastData?.summary.predicted_gross_profit ?? 0).toLocaleString()} (${forecastData?.margin_pct?.toFixed(1) ?? 50}%)`}
+              icon={TrendingUp}
               color="emerald"
             />
             <MetricCard
-              title="Peak Daily Spike"
-              value={forecastData?.summary.peak_daily_forecast.toFixed(1) ?? '0.0'}
-              subtitle="Projected maximum daily load"
-              icon={TrendingUp}
+              title="Avg Daily Demand Pace"
+              value={`${forecastData?.summary.avg_daily_forecast.toFixed(1) ?? '0.0'} /d`}
+              subtitle={`Peak Spike: ${forecastData?.summary.peak_daily_forecast.toFixed(1) ?? '0.0'} units`}
+              icon={Calendar}
               color="purple"
             />
             <MetricCard
               title="Holdout WAPE Accuracy"
               value={`${forecastData?.metrics.wape ?? 0}%`}
-              subtitle={`MAE: ${forecastData?.metrics.mae} units`}
+              subtitle={`MAE: ${forecastData?.metrics.mae} units • ${forecastData?.model_name}`}
               icon={CheckCircle2}
               badge="Holdout Score"
               color="blue"

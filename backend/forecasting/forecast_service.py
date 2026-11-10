@@ -151,9 +151,26 @@ class ForecastService:
         avg_predicted_daily = round(float(np.mean(future_preds)), 1)
         peak_predicted_daily = round(float(np.max(future_preds)), 1)
 
+        # Financial unit economics enrichment
+        from backend.data.catalog import get_product, get_store
+        prod_meta = get_product(item)
+        store_meta = get_store(store)
+
+        predicted_revenue = round(total_predicted_units * prod_meta["unit_price"], 2)
+        predicted_cost = round(total_predicted_units * prod_meta["unit_cost"], 2)
+        predicted_gross_profit = round(predicted_revenue - predicted_cost, 2)
+
         result = {
             "store": store,
+            "store_name": store_meta["name"],
             "item": item,
+            "product_name": prod_meta["name"],
+            "sku": prod_meta["sku"],
+            "category": prod_meta["category"],
+            "brand": prod_meta["brand"],
+            "unit_price": prod_meta["unit_price"],
+            "unit_cost": prod_meta["unit_cost"],
+            "margin_pct": prod_meta["margin_pct"],
             "model_id": model_id_clean,
             "model_name": next((m["name"] for m in AVAILABLE_MODELS if m["id"] == model_id_clean), model_id_clean),
             "horizon_days": horizon,
@@ -164,6 +181,9 @@ class ForecastService:
                 "total_predicted_units": total_predicted_units,
                 "avg_daily_forecast": avg_predicted_daily,
                 "peak_daily_forecast": peak_predicted_daily,
+                "predicted_revenue": predicted_revenue,
+                "predicted_cost": predicted_cost,
+                "predicted_gross_profit": predicted_gross_profit,
             },
             "history": history_points,
             "forecast": forecast_points,

@@ -245,13 +245,22 @@ export const SalesAnalyticsPage: React.FC<{
                   <ArrowUpRight className="w-3.5 h-3.5 mr-1" /> Top 5 Volume Leaders
                 </span>
                 <div className="space-y-1.5">
-                  {data?.top_performers.map((item) => (
+                  {data?.top_performers.map((item: any) => (
                     <div
                       key={item.item_id}
                       className="flex items-center justify-between p-2 rounded-lg bg-navy-900 border border-surface-border text-xs"
                     >
-                      <span className="font-medium text-slate-200">{item.item}</span>
-                      <div className="space-x-3 font-mono">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-slate-200">{item.item}</span>
+                        {item.category && (
+                          <div className="flex items-center space-x-2 mt-0.5 text-[10px]">
+                            <span className="text-brand-cyan font-mono">{item.sku}</span>
+                            <span className="text-slate-400">•</span>
+                            <span className="text-slate-400">{item.category}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-x-3 font-mono text-right">
                         <span className="text-slate-400">{item.avg_sales} units/day</span>
                         <span className="text-brand-emerald font-semibold">
                           {item.total_sales.toLocaleString()} units
@@ -267,13 +276,22 @@ export const SalesAnalyticsPage: React.FC<{
                   <ArrowDownRight className="w-3.5 h-3.5 mr-1" /> Bottom 5 Volume Items
                 </span>
                 <div className="space-y-1.5">
-                  {data?.bottom_performers.map((item) => (
+                  {data?.bottom_performers.map((item: any) => (
                     <div
                       key={item.item_id}
                       className="flex items-center justify-between p-2 rounded-lg bg-navy-900 border border-surface-border text-xs"
                     >
-                      <span className="font-medium text-slate-200">{item.item}</span>
-                      <div className="space-x-3 font-mono">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-slate-200">{item.item}</span>
+                        {item.category && (
+                          <div className="flex items-center space-x-2 mt-0.5 text-[10px]">
+                            <span className="text-brand-cyan font-mono">{item.sku}</span>
+                            <span className="text-slate-400">•</span>
+                            <span className="text-slate-400">{item.category}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-x-3 font-mono text-right">
                         <span className="text-slate-400">{item.avg_sales} units/day</span>
                         <span className="text-slate-300 font-semibold">
                           {item.total_sales.toLocaleString()} units

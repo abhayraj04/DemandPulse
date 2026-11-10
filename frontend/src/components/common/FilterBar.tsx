@@ -11,6 +11,8 @@ interface FilterBarProps {
   storeOptions?: number[];
   itemOptions?: number[];
   showItemFilter?: boolean;
+  productCatalog?: { item_id: number; name: string; sku?: string; category?: string }[];
+  storeRegistry?: { store_id: number; name: string; short_name?: string }[];
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -23,12 +25,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   storeOptions = Array.from({ length: 10 }, (_, i) => i + 1),
   itemOptions = Array.from({ length: 50 }, (_, i) => i + 1),
   showItemFilter = true,
+  productCatalog,
+  storeRegistry,
 }) => {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-surface-card border border-surface-border rounded-xl shadow-md">
       <div className="flex items-center space-x-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
         <SlidersHorizontal className="w-4 h-4 text-brand-cyan" />
-        <span>Global Filters</span>
+        <span>Enterprise Filters</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -36,19 +40,23 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <div className="flex items-center space-x-2">
           <label className="text-xs text-slate-400 flex items-center">
             <Store className="w-3.5 h-3.5 mr-1 text-slate-400" />
-            Store:
+            Location:
           </label>
           <select
             value={selectedStore ?? ''}
             onChange={(e) => onStoreChange(e.target.value ? Number(e.target.value) : undefined)}
-            className="bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-brand-cyan hover:border-slate-600 transition-colors"
+            className="bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-brand-cyan hover:border-slate-600 transition-colors max-w-[210px] truncate"
           >
             <option value="">All Stores (Chain-wide)</option>
-            {storeOptions.map((st) => (
-              <option key={st} value={st}>
-                Store {st}
-              </option>
-            ))}
+            {storeOptions.map((st) => {
+              const info = storeRegistry?.find((s) => s.store_id === st);
+              const label = info ? `${st}. ${info.short_name || info.name}` : `Store ${st}`;
+              return (
+                <option key={st} value={st}>
+                  {label}
+                </option>
+              );
+            })}
           </select>
         </div>
 
@@ -57,19 +65,23 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           <div className="flex items-center space-x-2">
             <label className="text-xs text-slate-400 flex items-center">
               <Package className="w-3.5 h-3.5 mr-1 text-slate-400" />
-              Item:
+              Product SKU:
             </label>
             <select
               value={selectedItem ?? ''}
               onChange={(e) => onItemChange(e.target.value ? Number(e.target.value) : undefined)}
-              className="bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-brand-cyan hover:border-slate-600 transition-colors"
+              className="bg-navy-850 text-slate-200 border border-surface-border rounded-lg px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-brand-cyan hover:border-slate-600 transition-colors max-w-[250px] truncate"
             >
-              <option value="">All Items (Top Aggregated)</option>
-              {itemOptions.map((it) => (
-                <option key={it} value={it}>
-                  Item {it}
-                </option>
-              ))}
+              <option value="">All SKUs (Aggregated)</option>
+              {itemOptions.map((it) => {
+                const prod = productCatalog?.find((p) => p.item_id === it);
+                const label = prod ? `#${it} • ${prod.name}` : `Item #${it}`;
+                return (
+                  <option key={it} value={it}>
+                    {label}
+                  </option>
+                );
+              })}
             </select>
           </div>
         )}
