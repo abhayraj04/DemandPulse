@@ -95,8 +95,8 @@ DemandPulse is deployable as:
 
 #### 1. Clone & Set Up Backend
 ```bash
-git clone https://github.com/abhayraj04/DemandVision.git
-cd DemandVision
+git clone https://github.com/abhayraj04/DemandPulse.git
+cd DemandPulse
 
 # Create virtual environment
 python -m venv venv
@@ -137,20 +137,20 @@ Open **`http://127.0.0.1:8000`** in your browser. Interactive OpenAPI documentat
 git add .
 git commit -m "feat: complete DemandPulse ready for deployment"
 git branch -M main
-git remote add origin https://github.com/abhayraj04/DemandVision.git
+git remote add origin https://github.com/abhayraj04/DemandPulse.git
 git push -u origin main
 ```
 *A GitHub Actions CI workflow (`.github/workflows/ci.yml`) will automatically trigger, verifying the build and running the 16 unit tests on Ubuntu.*
 
 #### 2. Deploy to Streamlit Community Cloud
 1. Go to [share.streamlit.io](https://share.streamlit.io) and connect GitHub.
-2. Select repository `abhayraj04/DemandVision`, branch `main`, and main file path `streamlit_app.py`.
+2. Select repository `abhayraj04/DemandPulse`, branch `main`, and main file path `streamlit_app.py`.
 3. Click **Deploy!**
 
 #### 3. Deploy to Render (Blueprint)
 1. Navigate to [dashboard.render.com](https://dashboard.render.com).
 2. Click **New +** -> **Blueprint**.
-3. Select your repository `abhayraj04/DemandVision`.
+3. Select your repository `abhayraj04/DemandPulse`.
 4. Render automatically reads [`render.yaml`](render.yaml), installs Python 3.11 & Node 20, runs [`build.sh`](build.sh), and starts the single-service app.
 5. Click **Apply** to deploy live.
 
