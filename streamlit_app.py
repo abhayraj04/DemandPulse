@@ -20,6 +20,7 @@ from backend.data.catalog import (
 )
 from backend.forecasting.forecast_service import get_forecast_service
 from backend.inventory.recommendations import get_inventory_recommendations
+from backend.inventory.abc_xyz import calculate_abc_xyz_analysis
 from backend.analytics.product_intelligence import calculate_product_intelligence_scores
 from backend.inventory.risk_engine import evaluate_demand_and_inventory_risks
 from backend.analytics.anomaly_detection import detect_sales_anomalies
@@ -577,33 +578,153 @@ elif module == "⚙ Data Science & ML Lab":
 # MODULE 7: INVENTORY INTELLIGENCE & PO
 # ==========================================
 elif module == "📦 Inventory Intelligence & PO":
-    st.title("Inventory Intelligence & Purchase Order Optimization")
-    st.caption("Automated Safety Stock ($Z \\cdot \\sigma_d \\cdot \\sqrt{L}$), Reorder Points, and CSV Purchase Order Export.")
+    st.title("Inventory Intelligence & Supply Chain Optimization")
+    st.caption("Automated Safety Stock ($Z \\cdot \\sigma_d \\cdot \\sqrt{L}$), Reorder Points, ABC-XYZ 9-Box Matrix, and Purchase Order Export.")
 
-    inv_res = get_inventory_recommendations(store=selected_store_id)
-    recs = inv_res["recommendations"]
+    tab_po, tab_abc, tab_sens = st.tabs([
+        "📋 Purchase Order Replenishment (PO)",
+        "🗂 ABC-XYZ Multi-Criteria Matrix (9-Box Grid)",
+        "⏱ Lead-Time & Safety Stock Sensitivity",
+    ])
 
-    rec_df = pd.DataFrame([{
-        "SKU": r["product_id"],
-        "Product Name": r["item_name"],
-        "Daily Demand": f"{r['avg_daily_demand']:.1f} u/d",
-        "Current Stock": r["current_stock"],
-        "Safety Stock": r["safety_stock"],
-        "Reorder Point": r["reorder_point"],
-        "Suggested Order": r["suggested_order"],
-        "Reorder Cost (₹)": format_inr(r["suggested_order_cost_inr"]),
-        "Status": r["status"],
-    } for r in recs])
+    with tab_po:
+        inv_res = get_inventory_recommendations(store=selected_store_id)
+        recs = inv_res["recommendations"]
+        summ = inv_res["summary"]
 
-    st.dataframe(rec_df, use_container_width=True, height=450)
+        p1, p2, p3, p4 = st.columns(4)
+        p1.metric("Critical Stockout SKUs", f"{summ['critical_stockout_risks']} SKUs", "Immediate PO Required")
+        p2.metric("Reorders Needed", f"{summ['reorders_needed']} SKUs", "Below Reorder Point")
+        p3.metric("Suggested PO Quantity", f"{summ['total_suggested_reorder_units']:,} units")
+        p4.metric("Total Replenishment Cost", format_inr(summ['total_suggested_reorder_cost_inr']))
 
-    csv_data = rec_df.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="📥 Download Purchase Order CSV (₹ INR)",
-        data=csv_data,
-        file_name=f"purchase_orders_store_{selected_store_id}.csv",
-        mime="text/csv",
-    )
+        st.write("")
+        rec_df = pd.DataFrame([{
+            "SKU": r["product_id"],
+            "Product Name": r["item_name"],
+            "Daily Demand": f"{r['avg_daily_demand']:.1f} u/d",
+            "Current Stock": r["current_stock"],
+            "Safety Stock": r["safety_stock"],
+            "Reorder Point": r["reorder_point"],
+            "Days Left": f"{r['days_remaining']:.1f}d",
+            "Suggested Order": r["suggested_order"],
+            "Reorder Cost (₹)": format_inr(r["suggested_order_cost_inr"]),
+            "Status": r["status"],
+        } for r in recs])
+
+        st.dataframe(rec_df, use_container_width=True, height=400)
+
+        csv_data = rec_df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Download Purchase Order CSV (₹ INR)",
+            data=csv_data,
+            file_name=f"DemandPulse_Replenishment_PO_Store_{selected_store_id}.csv",
+            mime="text/csv",
+        )
+
+    with tab_abc:
+        abc_res = calculate_abc_xyz_analysis(store=selected_store_id)
+        if "error" not in abc_res:
+            abc_summ = abc_res["summary"]
+            abc_d = abc_summ["abc_distribution"]
+            xyz_d = abc_summ["xyz_distribution"]
+
+            col_a, col_b, col_c = st.columns(3)
+            with col_a:
+                st.markdown(f"""
+                <div class="metric-card" style="border-color: rgba(6, 182, 212, 0.4);">
+                    <div style="font-size: 0.75rem; color: #06B6D4; font-weight: bold;">CLASS A (TOP 80% REVENUE)</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #FFFFFF;">{abc_d['A']['count']} SKUs ({abc_d['A']['pct_skus']}%)</div>
+                    <div style="font-size: 0.75rem; color: #94A3B8;">Revenue: {format_inr(abc_d['A']['revenue_inr'])} ({abc_d['A']['revenue_share_pct']}%)</div>
+                    <div style="font-size: 0.7rem; color: #06B6D4; margin-top: 4px;">Strict daily control, JIT replenishment</div>
+                </div>
+                """, unsafe_allow_html=True)
+            with col_b:
+                st.markdown(f"""
+                <div class="metric-card" style="border-color: rgba(245, 158, 11, 0.4);">
+                    <div style="font-size: 0.75rem; color: #F59E0B; font-weight: bold;">CLASS B (NEXT 15% REVENUE)</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #FFFFFF;">{abc_d['B']['count']} SKUs ({abc_d['B']['pct_skus']}%)</div>
+                    <div style="font-size: 0.75rem; color: #94A3B8;">Revenue: {format_inr(abc_d['B']['revenue_inr'])} ({abc_d['B']['revenue_share_pct']}%)</div>
+                    <div style="font-size: 0.7rem; color: #F59E0B; margin-top: 4px;">Periodic reviews, standard EOQ</div>
+                </div>
+                """, unsafe_allow_html=True)
+            with col_c:
+                st.markdown(f"""
+                <div class="metric-card" style="border-color: rgba(148, 163, 184, 0.4);">
+                    <div style="font-size: 0.75rem; color: #94A3B8; font-weight: bold;">CLASS C (REMAINING 5% REVENUE)</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #FFFFFF;">{abc_d['C']['count']} SKUs ({abc_d['C']['pct_skus']}%)</div>
+                    <div style="font-size: 0.75rem; color: #94A3B8;">Revenue: {format_inr(abc_d['C']['revenue_inr'])} ({abc_d['C']['revenue_share_pct']}%)</div>
+                    <div style="font-size: 0.7rem; color: #94A3B8; margin-top: 4px;">Bulk purchase, automated two-bin</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.write("")
+            st.subheader("9-Quadrant Supply Chain Governance Matrix")
+            grid = abc_res["matrix_grid"]
+            grid_rows = []
+            for k, v in grid.items():
+                grid_rows.append({
+                    "Segment": k,
+                    "SKUs": v["count"],
+                    "Revenue (₹)": format_inr(v["total_revenue"]),
+                    "Rev Share": f"{v['revenue_share_pct']}%",
+                    "Priority": v["priority"],
+                    "Supply Chain Replenishment Strategy": v["strategy"],
+                })
+            st.dataframe(pd.DataFrame(grid_rows), use_container_width=True)
+
+            # Interactive Scatter Chart: CV vs Revenue
+            scatter_df = pd.DataFrame(abc_res["items"])
+            fig_abc = px.scatter(
+                scatter_df,
+                x="cv",
+                y="total_revenue",
+                color="segment",
+                size="total_units",
+                hover_data=["product_id", "product_name", "category", "unit_price"],
+                labels={"cv": "Demand Volatility (Coefficient of Variation)", "total_revenue": "Estimated Revenue (₹)"},
+                title="Product Positioning: Predictability (CV) vs Revenue Value (ABC)",
+                color_discrete_sequence=px.colors.qualitative.Bold,
+            )
+            fig_abc.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="#0B0F19",
+                plot_bgcolor="#111827",
+                height=380,
+            )
+            st.plotly_chart(fig_abc, use_container_width=True)
+
+            abc_csv = pd.DataFrame(abc_res["items"]).to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="📥 Download Full ABC-XYZ Matrix CSV",
+                data=abc_csv,
+                file_name=f"DemandPulse_ABC_XYZ_Store_{selected_store_id}.csv",
+                mime="text/csv",
+            )
+
+    with tab_sens:
+        st.subheader("Lead-Time & Target Service Level Sensitivity")
+        st.caption("Model the financial impact of supply chain disruptions, monsoon logistics delays, and festive demand surges.")
+
+        sens_col1, sens_col2 = st.columns(2)
+        with sens_col1:
+            base_lt = st.slider("Nominal Lead Time (Days)", 3, 21, 7)
+            disrupt_lt = st.slider("Disrupted Lead Time (+Delay Days)", 0, 14, 3)
+            total_lt = base_lt + disrupt_lt
+            target_sl = st.select_slider("Target Service Level (%)", options=[85, 90, 95, 98, 99], value=95)
+
+        with sens_col2:
+            # Calculate dynamic impact on top 10 SKUs
+            z_val = {85: 1.04, 90: 1.28, 95: 1.645, 98: 2.05, 99: 2.33}[target_sl]
+            base_safety_units = int(round(z_val * 45.0 * np.sqrt(base_lt) * 10))
+            disrupted_safety_units = int(round(z_val * 45.0 * np.sqrt(total_lt) * 10))
+            extra_units = disrupted_safety_units - base_safety_units
+            extra_capital_inr = extra_units * 180.0  # avg unit price ~180 INR
+
+            st.metric("Effective Lead Time", f"{total_lt} Days", f"+{disrupt_lt} Days Delay")
+            st.metric("Required Safety Stock Surge", f"{extra_units:,} units", f"{((disrupted_safety_units / base_safety_units) - 1) * 100:.1f}% Increase")
+            st.metric("Working Capital Lockup", format_inr(extra_capital_inr), "Additional buffer inventory cost")
+            st.info("💡 **Executive Insight:** A 3-day supplier delay requires locking up additional working capital in safety buffer inventory to maintain a 95% service level.")
 
 # ==========================================
 # MODULE 8: 100 SKU CATALOG & PRICING

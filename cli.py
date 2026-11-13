@@ -31,6 +31,7 @@ from backend.forecasting.forecast_service import get_forecast_service
 from backend.forecasting.evaluation import evaluate_forecast
 from backend.inventory.recommendations import get_inventory_recommendations
 from backend.inventory.risk_engine import evaluate_demand_and_inventory_risks
+from backend.inventory.abc_xyz import calculate_abc_xyz_analysis
 from backend.analytics.anomaly_detection import detect_sales_anomalies
 from backend.analytics.product_intelligence import calculate_product_intelligence_scores
 
@@ -311,6 +312,111 @@ def cmd_anomaly(args):
     print()
 
 
+def cmd_abc_xyz(args):
+    """Run ABC-XYZ inventory segmentation analysis."""
+    store_meta = get_store(args.store) if args.store else {"name": "National", "city": "All Metro Hubs"}
+    print(f"\n{BOLD}{CYAN}=== ABC-XYZ INVENTORY SEGMENTATION MATRIX ==={RESET}")
+    print(f"Scope: {store_meta.get('name')} ({store_meta.get('city')})\n")
+
+    res = calculate_abc_xyz_analysis(store=args.store)
+    if "error" in res:
+        print(f"{RED}Error:{RESET} {res['error']}")
+        return
+
+    summary = res.get("summary", {})
+    abc_dist = summary.get("abc_distribution", {})
+    xyz_dist = summary.get("xyz_distribution", {})
+
+    # Overview Breakdown Table
+    summary_table = [
+        ["Class A (High Value - 80% Rev)", f"{abc_dist.get('A', {}).get('count', 0)} SKUs ({abc_dist.get('A', {}).get('pct_skus', 0):.1f}%)", format_inr(abc_dist.get('A', {}).get('revenue_inr', 0)), f"{abc_dist.get('A', {}).get('revenue_share_pct', 0):.1f}%", "Tightest control, daily review"],
+        ["Class B (Medium Value - 15% Rev)", f"{abc_dist.get('B', {}).get('count', 0)} SKUs ({abc_dist.get('B', {}).get('pct_skus', 0):.1f}%)", format_inr(abc_dist.get('B', {}).get('revenue_inr', 0)), f"{abc_dist.get('B', {}).get('revenue_share_pct', 0):.1f}%", "Standard control, periodic review"],
+        ["Class C (Low Value - 5% Rev)", f"{abc_dist.get('C', {}).get('count', 0)} SKUs ({abc_dist.get('C', {}).get('pct_skus', 0):.1f}%)", format_inr(abc_dist.get('C', {}).get('revenue_inr', 0)), f"{abc_dist.get('C', {}).get('revenue_share_pct', 0):.1f}%", "Bulk replenishment, two-bin system"],
+    ]
+    print(f"{BOLD}Pareto Revenue Value Distribution (ABC):{RESET}")
+    print(tabulate(summary_table, headers=["Classification", "SKU Count (%)", "Revenue Total", "Revenue Share", "Governance Policy"], tablefmt="rounded_outline"))
+
+    # Volatility Distribution (XYZ)
+    print(f"\n{BOLD}Demand Volatility Distribution (XYZ):{RESET}")
+    print(f"  • {GREEN}Class X (Constant / CV ≤ 0.35):{RESET} {xyz_dist.get('X', 0)} SKUs (High predictability, low safety buffer)")
+    print(f"  • {YELLOW}Class Y (Variable / 0.35 < CV ≤ 0.55):{RESET} {xyz_dist.get('Y', 0)} SKUs (Moderate volatility, seasonal buffer)")
+    print(f"  • {RED}Class Z (Erratic / CV > 0.55):{RESET} {xyz_dist.get('Z', 0)} SKUs (High uncertainty, dynamic safety stock)\n")
+
+    # 9-Segment Grid
+    matrix = res.get("matrix_grid", {})
+    matrix_rows = []
+    for seg_key in ["AX", "AY", "AZ", "BX", "BY", "BZ", "CX", "CY", "CZ"]:
+        seg_data = matrix.get(seg_key, {})
+        matrix_rows.append([
+            f"{BOLD}{seg_key}{RESET}",
+            f"{seg_data.get('count', 0)} SKUs",
+            format_inr(seg_data.get('total_revenue', 0)),
+            f"{seg_data.get('revenue_share_pct', 0):.1f}%",
+            seg_data.get("priority", "N/A"),
+            seg_data.get("strategy", "")[:45] + "...",
+        ])
+
+    print(f"{BOLD}9-Quadrant Supply Chain Strategy Matrix:{RESET}")
+    print(tabulate(matrix_rows, headers=["Segment", "SKU Count", "Revenue", "Share %", "Priority", "Recommended Replenishment Strategy"], tablefmt="psql"))
+
+    # Top A-Class Items
+    print(f"\n{BOLD}Top Class-A Critical SKUs:{RESET}")
+    items = res.get("items", [])
+    top_a = [x for x in items if x["abc_class"] == "A"][:8]
+    a_rows = []
+    for it in top_a:
+        a_rows.append([
+            it.get("product_id"),
+            it.get("product_name")[:24],
+            format_inr(it.get("unit_price", 0)),
+            f"{it.get('avg_daily_demand', 0):.1f} u/d",
+            f"{it.get('cv', 0):.2f}",
+            f"{BOLD}{it.get('segment')}{RESET}",
+            format_inr(it.get("total_revenue", 0)),
+            f"{it.get('cumulative_percentage', 0):.1f}%",
+            it.get("replenishment_model", ""),
+        ])
+    print(tabulate(a_rows, headers=["Product", "Name", "Price", "Daily Demand", "CV", "Segment", "Revenue", "Cum %", "Replenishment Model"], tablefmt="rounded_grid"))
+    print()
+
+
+def cmd_export(args):
+    """Export forecast, inventory PO, or ABC-XYZ segmentation to CSV."""
+    from backend.api.routes.inventory import (
+        export_forecast_csv_endpoint,
+        export_inventory_po_csv_endpoint,
+        export_abc_xyz_csv_endpoint,
+    )
+
+    print(f"\n{BOLD}{CYAN}=== DEMANDPULSE CSV DATA EXPORT ==={RESET}")
+    export_type = args.type.lower()
+    default_filename = ""
+    res = None
+
+    if export_type == "forecast":
+        res = export_forecast_csv_endpoint(store=args.store, item=args.item, horizon=args.horizon, model_id=args.model)
+        default_filename = f"DemandPulse_Forecast_Store{args.store}_Item{args.item}_{args.model}.csv"
+    elif export_type == "inventory":
+        res = export_inventory_po_csv_endpoint(store=args.store, lead_time_days=args.lead_time)
+        default_filename = f"DemandPulse_Replenishment_PO_Store{args.store}.csv"
+    elif export_type in ("abc-xyz", "abc"):
+        res = export_abc_xyz_csv_endpoint(store=args.store)
+        default_filename = f"DemandPulse_ABC_XYZ_Store{args.store or 'National'}.csv"
+    else:
+        print(f"{RED}Unknown export type:{RESET} {args.type}. Use 'forecast', 'inventory', or 'abc-xyz'.")
+        return
+
+    out_path = args.output or default_filename
+    with open(out_path, "wb") as f:
+        f.write(res.body)
+
+    file_size_kb = os.path.getsize(out_path) / 1024.0
+    print(f"{GREEN}✓ Export Successful!{RESET}")
+    print(f"File Saved:  {BOLD}{out_path}{RESET}")
+    print(f"File Size:   {file_size_kb:.1f} KB")
+    print(f"Format:      RFC 4180 Standard CSV\n")
+
+
 def main():
     print_banner()
     parser = argparse.ArgumentParser(
@@ -341,6 +447,20 @@ def main():
     p_inv.add_argument("--service-level", type=int, default=95, help="Target service level percentage (default: 95)")
     p_inv.add_argument("--limit", type=int, default=10, help="Number of items to show (default: 10)")
 
+    # Command: abc-xyz
+    p_abc = subparsers.add_parser("abc-xyz", help="Run ABC-XYZ inventory segmentation (Pareto value & volatility)")
+    p_abc.add_argument("--store", type=int, default=1, help="Store ID (1-10, default: 1)")
+
+    # Command: export
+    p_exp = subparsers.add_parser("export", help="Export dataset, forecast, or PO directly to CSV")
+    p_exp.add_argument("--type", type=str, required=True, choices=["forecast", "inventory", "abc-xyz"], help="Export dataset type")
+    p_exp.add_argument("--store", type=int, default=1, help="Store ID (1-10)")
+    p_exp.add_argument("--item", type=int, default=1, help="Item ID (1-50)")
+    p_exp.add_argument("--horizon", type=int, default=30, help="Forecast horizon days (default: 30)")
+    p_exp.add_argument("--model", type=str, default="xgboost", help="Forecast model")
+    p_exp.add_argument("--lead-time", type=int, default=7, help="Lead time days")
+    p_exp.add_argument("--output", "-o", type=str, default=None, help="Output file path (default: auto-named .csv)")
+
     # Command: report
     p_rep = subparsers.add_parser("report", help="Generate Executive Intelligence Brief in Markdown")
     p_rep.add_argument("--store", type=int, default=None, help="Store ID (optional; default: All Stores)")
@@ -364,6 +484,8 @@ def main():
         "forecast": cmd_forecast,
         "benchmark": cmd_benchmark,
         "inventory": cmd_inventory,
+        "abc-xyz": cmd_abc_xyz,
+        "export": cmd_export,
         "report": cmd_report,
         "anomaly": cmd_anomaly,
     }

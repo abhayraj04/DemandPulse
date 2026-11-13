@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   Flame,
   BarChart2,
-  CalendarDays
+  CalendarDays,
+  Download,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -251,6 +252,15 @@ export const DemandForecastingPage: React.FC<{
                   <span className="text-slate-400 text-[10px]">Estimated Profit</span>
                   <p className="text-sm font-bold text-brand-cyan">{formatINR(forecastData?.summary.predicted_gross_profit)}</p>
                 </div>
+                <a
+                  href={api.getForecastCsvUrl({ store, item, horizon, model_id: modelId })}
+                  download
+                  className="px-3 py-1.5 rounded-lg bg-surface-card hover:bg-slate-800 text-slate-200 border border-surface-border text-xs font-semibold flex items-center space-x-1.5 transition-colors shadow-sm font-sans"
+                  title="Download time-series forecast schedule CSV"
+                >
+                  <Download className="w-3.5 h-3.5 text-brand-cyan" />
+                  <span>Export CSV</span>
+                </a>
               </div>
             </div>
           )}

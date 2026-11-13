@@ -166,6 +166,15 @@ export const InventoryPage: React.FC<{
               <Download className="w-3.5 h-3.5 text-brand-cyan" />
               <span>Export PO (.CSV)</span>
             </button>
+            <a
+              href={api.getAbcXyzCsvUrl(store)}
+              download
+              className="px-3 py-1 bg-surface-border hover:bg-navy-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-colors"
+              title="Download complete 9-quadrant ABC-XYZ segmentation matrix CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-brand-purple" />
+              <span>Export ABC-XYZ (.CSV)</span>
+            </a>
           </div>
         </div>
 

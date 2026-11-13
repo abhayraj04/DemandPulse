@@ -299,6 +299,50 @@ def test_executive_summary_report_endpoint():
     assert res["kpis"]["total_units"] > 0
 
 
+def test_abc_xyz_segmentation_analysis():
+    """Verifies ABC-XYZ 9-segment multi-criteria inventory matrix."""
+    from backend.inventory.abc_xyz import calculate_abc_xyz_analysis
+    res = calculate_abc_xyz_analysis(store=1)
+    assert res["status"] == "success"
+    assert "summary" in res
+    assert "matrix_grid" in res
+    assert len(res["items"]) > 0
+    # Check that A, B, C classes are assigned
+    classes = {it["abc_class"] for it in res["items"]}
+    assert "A" in classes
+    assert "B" in classes
+    assert "C" in classes
+    # Check that 9 segments exist
+    assert "AX" in res["matrix_grid"]
+    assert "CZ" in res["matrix_grid"]
+
+
+def test_csv_export_endpoints():
+    """Verifies RFC-4180 CSV export endpoints for forecast, PO, and ABC-XYZ."""
+    from backend.api.routes.inventory import (
+        export_forecast_csv_endpoint,
+        export_inventory_po_csv_endpoint,
+        export_abc_xyz_csv_endpoint,
+    )
+    # Forecast CSV
+    res_fc = export_forecast_csv_endpoint(store=1, item=1)
+    assert res_fc.media_type == "text/csv"
+    assert b"predicted_sales_units" in res_fc.body
+    assert b"estimated_revenue_inr" in res_fc.body
+
+    # Replenishment PO CSV
+    res_po = export_inventory_po_csv_endpoint(store=1)
+    assert res_po.media_type == "text/csv"
+    assert b"suggested_order_qty" in res_po.body
+    assert b"reorder_point" in res_po.body
+
+    # ABC-XYZ Matrix CSV
+    res_abc = export_abc_xyz_csv_endpoint(store=1)
+    assert res_abc.media_type == "text/csv"
+    assert b"abc_class" in res_abc.body
+    assert b"coefficient_of_variation_cv" in res_abc.body
+
+
 def test_frontend_dist_integration():
     """Verifies production frontend build and SPA assets exist."""
     from backend.config import FRONTEND_DIST_DIR

@@ -299,4 +299,48 @@ export const api = {
     if (!res.ok) throw new Error('Failed to generate executive intelligence briefing');
     return res.json();
   },
+
+  // ABC-XYZ Inventory Multi-Criteria Segmentation
+  async getAbcXyzAnalysis(store?: number): Promise<{
+    status: string;
+    store: number | null;
+    store_meta: Record<string, any>;
+    summary: {
+      total_skus: number;
+      total_revenue_inr: number;
+      abc_distribution: Record<string, any>;
+      xyz_distribution: Record<string, any>;
+    };
+    matrix_grid: Record<string, any>;
+    items: Array<any>;
+    disclaimer: string;
+  }> {
+    const query = store ? `?store=${store}` : '';
+    const res = await fetch(`${API_BASE}/inventory/abc-xyz${query}`);
+    if (!res.ok) throw new Error('Failed to load ABC-XYZ analysis');
+    return res.json();
+  },
+
+  // Direct CSV download URLs
+  getForecastCsvUrl(params: { store: number; item: number; horizon?: number; model_id?: string }): string {
+    const query = new URLSearchParams({
+      store: params.store.toString(),
+      item: params.item.toString(),
+    });
+    if (params.horizon) query.set('horizon', params.horizon.toString());
+    if (params.model_id) query.set('model_id', params.model_id);
+    return `${API_BASE}/export/forecast-csv?${query.toString()}`;
+  },
+
+  getInventoryPoCsvUrl(params: { store: number; lead_time_days?: number; target_service_level?: number }): string {
+    const query = new URLSearchParams({ store: params.store.toString() });
+    if (params.lead_time_days) query.set('lead_time_days', params.lead_time_days.toString());
+    if (params.target_service_level) query.set('target_service_level', params.target_service_level.toString());
+    return `${API_BASE}/export/inventory-po-csv?${query.toString()}`;
+  },
+
+  getAbcXyzCsvUrl(store?: number): string {
+    const query = store ? `?store=${store}` : '';
+    return `${API_BASE}/export/abc-xyz-csv${query}`;
+  },
 };
