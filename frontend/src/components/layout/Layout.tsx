@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar, NavTab } from './Sidebar';
 import { Topbar } from './Topbar';
 
@@ -75,6 +75,22 @@ export const Layout: React.FC<LayoutProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarHidden, setSidebarHidden] = useState(false);
   const current = tabTitles[activeTab];
+
+  // Productivity Keyboard Shortcut: Press '[' or 'Ctrl+B' to toggle navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (
+        (e.key === '[' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) ||
+        ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b')
+      ) {
+        e.preventDefault();
+        setSidebarHidden((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-navy-900 text-slate-100">

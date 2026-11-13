@@ -284,4 +284,19 @@ export const api = {
     if (!res.ok) throw new Error('Failed to load Data Science Lab analytics');
     return res.json();
   },
+
+  // Executive Intelligence Briefing Export
+  async getExecutiveSummaryReport(store?: number): Promise<{
+    status: string;
+    generated_at: string;
+    store_scope: string;
+    kpis: Record<string, any>;
+    markdown_report: string;
+    summary_highlights: string[];
+  }> {
+    const query = store ? `?store=${store}` : '';
+    const res = await fetch(`${API_BASE}/reports/executive-summary${query}`);
+    if (!res.ok) throw new Error('Failed to generate executive intelligence briefing');
+    return res.json();
+  },
 };

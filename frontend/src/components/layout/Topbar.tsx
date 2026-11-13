@@ -10,7 +10,10 @@ import {
   ExternalLink,
   PanelLeftClose,
   PanelLeftOpen,
+  FileDown,
+  Loader2,
 } from 'lucide-react';
+import { api } from '../../services/api';
 
 interface TopbarProps {
   title: string;
@@ -32,6 +35,27 @@ export const Topbar: React.FC<TopbarProps> = ({
   onToggleSidebar,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const downloadExecutiveBrief = async () => {
+    try {
+      setIsExporting(true);
+      const res = await api.getExecutiveSummaryReport();
+      const blob = new Blob([res.markdown_report], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `DemandPulse_Executive_Brief_${new Date().toISOString().slice(0, 10)}.md`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export executive summary:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const notifications = [
     {
@@ -97,6 +121,21 @@ export const Topbar: React.FC<TopbarProps> = ({
 
       {/* Right Action Icons & Controls */}
       <div className="flex items-center space-x-3">
+        {/* Executive Intelligence Briefing Download Button */}
+        <button
+          onClick={downloadExecutiveBrief}
+          disabled={isExporting}
+          className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-brand-blue/20 to-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 hover:border-brand-cyan hover:bg-brand-cyan/20 transition-all shadow-sm"
+          title="Download comprehensive Markdown Executive Briefing with KPIs and model insights"
+        >
+          {isExporting ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <FileDown className="w-3.5 h-3.5 text-brand-cyan" />
+          )}
+          <span>Executive Brief</span>
+        </button>
+
         {/* Dataset Status Pill */}
         <button
           onClick={onOpenDataset}

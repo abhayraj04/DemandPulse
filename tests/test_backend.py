@@ -277,6 +277,28 @@ def test_advanced_analytics_endpoints():
     assert len(lab["model_explainability"]["feature_importance"]) > 0
 
 
+def test_forecast_tracking_signal_and_bias():
+    """Verifies tracking signal and bias status diagnostics."""
+    actual = np.array([10.0, 12.0, 14.0, 16.0, 18.0, 20.0])
+    pred = np.array([5.0, 6.0, 7.0, 8.0, 9.0, 10.0])  # systematically under-forecasting
+    metrics = evaluate_forecast(actual, pred)
+    assert "tracking_signal" in metrics
+    assert "bias_status" in metrics
+    assert metrics["tracking_signal"] >= 4.0
+    assert "Under-Forecasting" in metrics["bias_status"]
+
+
+def test_executive_summary_report_endpoint():
+    """Verifies executive intelligence briefing generation and markdown export."""
+    from backend.api.routes.analytics_advanced import get_executive_summary_report_endpoint
+    res = get_executive_summary_report_endpoint(store=1)
+    assert res["status"] == "success"
+    assert "kpis" in res
+    assert "markdown_report" in res
+    assert "DemandPulse Executive Intelligence Brief" in res["markdown_report"]
+    assert res["kpis"]["total_units"] > 0
+
+
 def test_frontend_dist_integration():
     """Verifies production frontend build and SPA assets exist."""
     from backend.config import FRONTEND_DIST_DIR

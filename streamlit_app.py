@@ -208,8 +208,21 @@ st.markdown(
 # MODULE 1: EXECUTIVE OVERVIEW
 # ==========================================
 if module == "📊 Executive Overview":
-    st.title("Executive Overview")
-    st.caption("High-level retail performance KPIs, sales growth, and store benchmarks across 10 Indian metropolitan clusters.")
+    col_head1, col_head2 = st.columns([3, 1])
+    with col_head1:
+        st.title("Executive Overview")
+        st.caption("High-level retail performance KPIs, sales growth, and store benchmarks across 10 Indian metropolitan clusters.")
+    with col_head2:
+        st.write("")
+        from backend.api.routes.analytics_advanced import get_executive_summary_report_endpoint
+        brief_data = get_executive_summary_report_endpoint(store=selected_store_id)
+        st.download_button(
+            label="📥 Export Executive Brief",
+            data=brief_data.get("markdown_report", ""),
+            file_name=f"DemandPulse_Executive_Brief_Store{selected_store_id}.md",
+            mime="text/markdown",
+            help="Download comprehensive Markdown executive intelligence briefing",
+        )
 
     # Top KPI Cards
     col1, col2, col3, col4 = st.columns(4)

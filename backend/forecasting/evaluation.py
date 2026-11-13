@@ -68,10 +68,25 @@ def evaluate_forecast(
     except Exception:
         r2 = 0.0
 
-    # Residual analysis
+    # Residual analysis and tracking signal diagnostics
     residuals = actual - predicted
     mean_residual = float(np.mean(residuals))
     std_residual = float(np.std(residuals))
+    cumulative_error = float(np.sum(residuals))
+
+    # Tracking Signal = Cumulative Forecast Error / MAD (MAE)
+    # Industry standard control limits are between -4.0 and +4.0
+    if mae > 0:
+        tracking_signal = float(cumulative_error / mae)
+    else:
+        tracking_signal = 0.0
+
+    if tracking_signal >= 4.0:
+        bias_status = "Under-Forecasting (Actuals > Forecasts)"
+    elif tracking_signal <= -4.0:
+        bias_status = "Over-Forecasting (Forecasts > Actuals)"
+    else:
+        bias_status = "Unbiased (Within ±4 MAD Control Limits)"
 
     return {
         "mae": round(mae, 2),
@@ -81,4 +96,7 @@ def evaluate_forecast(
         "r2": round(r2, 4),
         "mean_residual": round(mean_residual, 2),
         "std_residual": round(std_residual, 2),
+        "cumulative_error": round(cumulative_error, 2),
+        "tracking_signal": round(tracking_signal, 2),
+        "bias_status": bias_status,
     }
